@@ -2,8 +2,8 @@ apiVersion: v2
 name: goldberry
 description: Self-hosted allowance tracker for kids. One container; SQLite on a volume, or an external Postgres.
 type: application
-version: 1.0.0 # x-release-please-version
-appVersion: "1.0.0" # x-release-please-version
+version: 1.1.0 # x-release-please-version
+appVersion: "1.1.0" # x-release-please-version
 home: https://github.com/chinny/goldberry
 sources:
   - https://github.com/chinny/goldberry
