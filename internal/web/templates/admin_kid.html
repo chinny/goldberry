@@ -17,7 +17,7 @@
   <div class="jar jar-{{jarClass .Kind}}">
     <div class="spread"><span class="jar-name">{{.Name}}</span>{{template "lock-badge" (pair $v .)}}</div>
     <div class="money-l">{{$v.Money .Balance}}</div>
-    <div class="small">{{if .Held}}<span class="held-ink">{{$v.Money .Held}} held · {{$v.Money .Available}} available</span>{{else}}<span class="muted">{{pct .BPS}}% of deposits</span>{{end}}</div>
+    <div class="small">{{if .Held}}<span class="held-ink">{{$v.Money .Held}} held · {{$v.Money .Available}} available</span>{{else}}<span class="muted">{{pct .BPS}}% of deposits</span>{{end}}{{with index $v.D.Interest .ID}}{{if .Active}} · <span class="muted">{{pct .MonthlyBPS}}% / month interest{{if .MonthlyCap}} · cap {{$v.Money .MonthlyCap}}{{end}}</span>{{end}}{{end}}</div>
     {{range .Locks}}
     <form method="post" action="/admin/locks/{{.ID}}/remove" class="lock-line small">
       {{template "csrf" $v}}<input type="hidden" name="next" value="/admin/kids/{{$kid.ID}}">
@@ -81,6 +81,28 @@
       {{else}}
       <p class="muted">No allowance yet. <a href="/admin/kids/{{$kid.ID}}/allowance">Set one up</a> and it pays itself.</p>
       {{end}}
+    </section>
+    <section class="card stack">
+      <div class="spread"><h2>Goals</h2><a href="/admin/kids/{{$kid.ID}}/goals/new">Add</a></div>
+      {{if .D.Goals}}{{template "goal-list" (pair $v .D.Goals)}}{{else}}<p class="muted">No goals yet. {{$kid.DisplayName}} can add them too.</p>{{end}}
+    </section>
+    <section class="card stack">
+      <h2>Interest</h2>
+      <p class="caption">Paid by you on the 1st, on last month’s average daily balance. Leave it at 0 to turn it off.</p>
+      {{range .D.Jars}}{{$rule := index $v.D.Interest .ID}}{{if or (eq (print .Kind) "save") $rule.Active}}
+      <form method="post" action="/admin/kids/{{$kid.ID}}/interest" class="stack-sm">
+        {{template "csrf" $v}}<input type="hidden" name="jar" value="{{.ID}}"><input type="hidden" name="next" value="/admin/kids/{{$kid.ID}}"><input type="hidden" name="active" value="1">
+        <strong>{{.Name}}</strong>
+        <div class="row">
+          <label class="small" for="rate-{{.ID}}">% / month</label>
+          <input class="pct-input" id="rate-{{.ID}}" name="rate" inputmode="decimal" value="{{if $rule.Active}}{{pct $rule.MonthlyBPS}}{{else}}0{{end}}">
+          <label class="small" for="cap-{{.ID}}">cap {{$v.Symbol}}</label>
+          <input class="pct-input" id="cap-{{.ID}}" name="cap" inputmode="decimal" value="{{if $rule.MonthlyCap}}{{$v.Plain $rule.MonthlyCap}}{{end}}" placeholder="none">
+          <button class="btn btn-outline btn-sm" type="submit">Save</button>
+        </div>
+        {{$p := $v.D.Projection12 .}}{{if $p}}<span class="caption">Left alone: about {{$v.Money $p}} in 12 months.</span>{{end}}
+      </form>
+      {{end}}{{end}}
     </section>
     {{if .D.Overrides}}
     <section class="card stack">

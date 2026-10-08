@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "replicaCount": { "type": "integer", "minimum": 0 },
+    "timezone": { "type": "string", "minLength": 1 },
+    "insecureCookies": { "type": "boolean" },
+    "logFormat": { "enum": ["json", "text"] },
+    "backup": {
+      "type": "object",
+      "properties": {
+        "schedule": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+        "retain": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "properties": { "accessMode": { "enum": ["ReadWriteOnce", "ReadWriteOncePod"] } }
+    }
+  },
+  "if": {
+    "properties": {
+      "postgres": {
+        "properties": {
+          "external": { "properties": { "url": { "const": "" }, "existingSecret": { "const": "" } } }
+        }
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "replicaCount": {
+        "maximum": 1,
+        "description": "SQLite allows exactly one replica; use postgres.external for more."
+      }
+    }
+  }
+}

@@ -60,6 +60,12 @@ func (s *Server) renderKidRequest(w http.ResponseWriter, r *http.Request, c *req
 		v.Form = r.PostForm
 	} else {
 		v.Form.Set("jar", r.URL.Query().Get("jar"))
+		if g := goalForRequest(kv, r.URL.Query().Get("goal")); g != nil { // "Ask to buy it"
+			v.Form.Set("goal", g.ID)
+			v.Form.Set("jar", g.JarID)
+			v.Form.Set("amount", rc(r).Cur.Plain(g.TargetAmount))
+			v.Form.Set("reason", g.Name)
+		}
 		if v.Form.Get("jar") == "" && len(kv.Jars) > 0 {
 			v.Form.Set("jar", kv.Jars[0].ID)
 		}
@@ -76,7 +82,7 @@ func (s *Server) kidRequestSubmit(w http.ResponseWriter, r *http.Request, c *req
 	}
 	req, err := s.svc.CreateRequest(r.Context(), *c.User, service.RequestInput{
 		JarID: f.Get("jar"), Amount: amount, Reason: f.Get("reason"), IdempotencyKey: f.Get("key"),
-		Override: f.Get("override"), RemoveLock: f.Get("remove_lock") == "1",
+		Override: f.Get("override"), RemoveLock: f.Get("remove_lock") == "1", GoalID: f.Get("goal"),
 	})
 	if err != nil {
 		if s.toGauntlet(w, r, err, "request", f) {
@@ -255,6 +261,7 @@ func (s *Server) toGauntlet(w http.ResponseWriter, r *http.Request, err error, t
 	switch then {
 	case "request":
 		q.Set("reason", f.Get("reason"))
+		q.Set("goal", f.Get("goal"))
 	case "transfer":
 		q.Set("to", f.Get("to"))
 	}
@@ -274,7 +281,9 @@ type gauntletData struct {
 	Reason   string
 	Key      string
 	LockID   string
+	GoalID   string
 	After    int64
+	Impacts  []service.GoalImpact
 }
 
 func (s *Server) gauntletPage(w http.ResponseWriter, r *http.Request, c *reqCtx) {
@@ -311,6 +320,12 @@ func (s *Server) gauntletPage(w http.ResponseWriter, r *http.Request, c *reqCtx)
 		d.Action = "/locks/" + d.LockID + "/remove"
 	}
 	d.After = jar.Available() - d.Amount
+	d.GoalID = q.Get("goal")
+	drop := d.Amount
+	if d.Then == "remove" {
+		drop = jar.Available()
+	}
+	d.Impacts, _ = s.svc.GoalImpacts(r.Context(), c.User.ID, jar.ID, drop)
 	v := s.newView(w, r, "Past-you set this for a reason", d)
 	v.Bare = true
 	s.render(w, r, http.StatusOK, "gauntlet", v)

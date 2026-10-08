@@ -1,0 +1,133 @@
+{{- if and (include "goldberry.sqlite" .) (gt (int .Values.replicaCount) 1) }}
+{{- fail "replicaCount > 1 needs postgres.external: SQLite allows exactly one replica" }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "goldberry.fullname" . }}
+  labels:
+    {{- include "goldberry.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate  # never two pods on one SQLite file
+  selector:
+    matchLabels:
+      {{- include "goldberry.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "goldberry.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      enableServiceLinks: false
+      containers:
+        - name: goldberry
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [serve]
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: GOLDBERRY_LISTEN
+              value: ":8080"
+            {{- if include "goldberry.sqlite" . }}
+            - name: GOLDBERRY_DATABASE_URL
+              value: sqlite:///data/goldberry.db
+            {{- else }}
+            - name: GOLDBERRY_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.external.existingSecret | default (include "goldberry.fullname" .) }}
+                  key: {{ if .Values.postgres.external.existingSecret }}{{ .Values.postgres.external.existingSecretKey }}{{ else }}database-url{{ end }}
+            {{- end }}
+            - name: GOLDBERRY_SECRET_KEY_FILE
+              value: /secrets/secret-key
+            - name: TZ
+              value: {{ .Values.timezone | quote }}
+            - name: GOLDBERRY_LOG_FORMAT
+              value: {{ .Values.logFormat | quote }}
+            - name: GOLDBERRY_BACKUP_SCHEDULE
+              value: {{ .Values.backup.schedule | quote }}
+            - name: GOLDBERRY_BACKUP_RETAIN
+              value: {{ .Values.backup.retain | quote }}
+            {{- with .Values.baseURL }}
+            - name: GOLDBERRY_BASE_URL
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.trustedProxies }}
+            - name: GOLDBERRY_TRUSTED_PROXIES
+              value: {{ . | quote }}
+            {{- end }}
+            {{- if .Values.insecureCookies }}
+            - name: GOLDBERRY_INSECURE_COOKIES
+              value: "true"
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 30
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+            - name: secrets
+              mountPath: /secrets
+              readOnly: true
+      volumes:
+        - name: data
+          {{- if and (include "goldberry.sqlite" .) .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "goldberry.fullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+        - name: secrets
+          secret:
+            secretName: {{ include "goldberry.secretName" . }}
+            items:
+              - key: {{ if .Values.secretKey.existingSecret }}{{ .Values.secretKey.existingSecretKey }}{{ else }}secret-key{{ end }}
+                path: secret-key
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

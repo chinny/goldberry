@@ -46,6 +46,18 @@
 {{end}}
 
 <section class="stack">
+  <div class="spread"><h2>My goals</h2><a href="/goals/new"><strong>New goal</strong></a></div>
+  {{if .D.Goals}}
+  <div class="card">{{template "goal-list" (pair . .D.Goals)}}</div>
+  {{else}}
+  <p class="card empty-state">Saving for something? <a href="/goals/new">Make it a goal</a> and watch it fill up.</p>
+  {{end}}
+  {{range .D.Jars}}{{$p := $v.D.Projection12 .}}{{if $p}}
+  <p class="small muted">Leave {{.Name}} alone and in 12 months you’ll have about <strong class="credit-ink">{{$v.Money $p}}</strong> with interest.</p>
+  {{end}}{{end}}
+</section>
+
+<section class="stack">
   <div class="spread"><h2>Recent</h2><a href="/ledger"><strong>All activity</strong></a></div>
   {{template "ledger-rows" (pair . .D.Recent)}}
 </section>

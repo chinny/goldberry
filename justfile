@@ -37,9 +37,18 @@ lint:
 image tag="goldberry:dev":
     docker build -t {{tag}} --build-arg COMMIT=$(git rev-parse HEAD) .
 
-# Multi-arch build with ko (no push).
-ko:
-    VERSION=dev KO_DOCKER_REPO=ghcr.io/chinny/goldberry ko build --push=false ./cmd/goldberry
+# Multi-arch image build with buildx (no push), as the release does it.
+image-multiarch:
+    docker buildx build --platform linux/amd64,linux/arm64 --build-arg COMMIT=$(git rev-parse HEAD) .
+
+# Lint and render the Helm chart.
+helm:
+    helm lint deploy/helm/goldberry --strict
+    helm template gb deploy/helm/goldberry > /dev/null
+
+# Snapshot the local SQLite database (./data) now.
+backup:
+    GOLDBERRY_DATABASE_URL=sqlite://./data/goldberry.db go run ./cmd/goldberry backup
 
 # Build the image, run it, and drive the Playwright smoke test against it.
 e2e:

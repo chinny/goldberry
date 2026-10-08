@@ -1,0 +1,98 @@
+# Goldberry is one container. With SQLite (the default) it must run as exactly
+# one replica on a block-backed ReadWriteOnce volume (never NFS or SMB).
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/chinny/goldberry
+  tag: ""           # defaults to the chart's appVersion
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Default household time zone at setup, and the clock for nightly backups.
+timezone: UTC
+# Public URL, e.g. https://goldberry.home.example.com (used in email links).
+baseURL: ""
+# CIDRs whose X-Forwarded-For is trusted for client IPs in logs.
+trustedProxies: ""
+# Drops the cookie Secure flag for plain-HTTP testing. Leave off behind TLS.
+insecureCookies: false
+logFormat: json
+
+backup:
+  schedule: "03:15"
+  retain: 14
+
+# GOLDBERRY_SECRET_KEY (32+ random bytes, base64). Leave everything empty to
+# have the chart generate one and keep it across upgrades.
+secretKey:
+  value: ""
+  existingSecret: ""
+  existingSecretKey: secret-key
+
+# Use an existing Postgres instead of SQLite (the chart never bundles one).
+postgres:
+  external:
+    url: ""                # postgres://user:pass@host:5432/goldberry?sslmode=require
+    existingSecret: ""     # or read the URL from a Secret
+    existingSecretKey: url
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""         # must be block-backed (local-path, Longhorn, Ceph RBD), never NFS
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: goldberry.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# Gateway API HTTPRoute (e.g. a Cilium or Envoy Gateway).
+httpRoute:
+  enabled: false
+  parentRefs: []           # - name: my-gateway
+  hostnames: []            # - goldberry.home.example.com
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 256Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+extraEnv: []

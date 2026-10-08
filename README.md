@@ -4,34 +4,43 @@ A self-hosted allowance tracker for kids. Parents add and remove money with a co
 
 One container, one volume: a Go binary serving server-rendered HTML (HTMX), with SQLite on the volume by default or Postgres if you point it at one. *Named for Goldberry, the River-daughter in The Lord of the Rings.*
 
+![The parent dashboard: a request waiting for approval and a card per kid with their Spend, Save and Give jars](docs/screenshots/parent-dashboard.png)
+
+| A kid's home | Breaking your own lock | Signing in |
+| --- | --- | --- |
+| <img src="docs/screenshots/kid-home.png" width="260" alt="A kid's home: the Spend jar, Save and Give with lock badges, a pending request"> | <img src="docs/screenshots/gauntlet.png" width="260" alt="The red lock-breaking screen with the kid's own reason, the cost and a countdown"> | <img src="docs/screenshots/pin-pad.png" width="260" alt="The PIN pad"> |
+
 ## Quickstart (Docker Compose, 60 seconds)
 
 ```sh
-git clone https://github.com/chinny/goldberry && cd goldberry/deploy/compose
+mkdir goldberry && cd goldberry
+curl -fsSLO https://raw.githubusercontent.com/chinny/goldberry/main/deploy/compose/compose.yaml
 openssl rand -base64 32 > goldberry_key.txt
-docker compose up -d --build          # drop --build once a release is published
+docker compose up -d
 docker compose logs goldberry | grep -i "setup token"
 ```
 
-Open `http://<host>:8080/setup`, paste the setup token, and create the first parent account. Then add your kids.
+Open `https://<host>/setup`, paste the setup token, and create the first parent account. Then add your kids.
 
 > Sessions use `Secure` cookies, so put Goldberry behind a TLS reverse proxy (Caddy, Traefik, a Gateway). For a quick plain-HTTP trial on your LAN, set `GOLDBERRY_INSECURE_COOKIES: "true"` in `compose.yaml`.
 
-## What works today (v0.x)
+On Kubernetes: `helm install goldberry oci://ghcr.io/chinny/charts/goldberry`. See [docs/operations](docs/operations/install.md) for install, [upgrade](docs/operations/upgrade.md), [backup and restore](docs/operations/backup-restore.md) and [troubleshooting](docs/operations/troubleshooting.md).
 
-Phases 0–2 and 4 of the [design plan](docs/design/plan.md#14-phasing) (email, Phase 3, is parked):
+## What it does
 
-- **First-run setup** guarded by a one-time token printed to the container log.
-- **Accounts:** parents sign in with a password, kids with a 4–6 digit PIN on a big PIN pad. Throttling is per account; kids hard-lock after 10 wrong PINs and only a parent can unlock them. Parents can reset PINs, sign a kid out of every device, and disable accounts.
-- **Money:** an append-only ledger in integer cents. Add or remove funds with a comment the kid sees and a private note they don't. Undo is a visible reversal, never an edit. Balances can't go below zero unless you allow it.
-- **Requests:** a kid asks for money from what's available; the amount is held until a parent approves (optionally a lower amount, with a note), denies, the kid cancels, or it expires (14 days by default).
-- **Notifications:** an in-app bell for both parents and kids, with Approve/Deny inline. The first parent to decide wins; the other sees "Approved by Mom".
-- **Jars:** every kid has Spend, Save and Give, split 70/20/10 (leftover cents go to Spend). Parents can rename, add and archive jars and change the split; deposits can use the split or go to one jar. Kids move money between their own jars.
-- **Jar locks:** a parent's lock is hard. A kid can lock their own jar ("Saving for a Switch") and break it only through the gauntlet: a loud warning, a 10-second countdown and a 3-second press-and-hold, enforced by the server ([ADR 0011](docs/adr/0011-server-enforced-gauntlet.md)). Parents are told when a lock is broken.
-- **Recurring allowance:** weekly, every two weeks or monthly, into the split or one jar. It pays itself on the household's calendar, catches up after downtime (up to 8 payments), never double-pays, and can be paused.
-- Light and dark themes, phone-first, works without JavaScript, no CDN (works offline on a LAN).
+- **Accounts:** parents sign in with a password, kids with a 4–6 digit PIN on a big PIN pad. Throttling is per account; kids hard-lock after 10 wrong PINs and only a parent can unlock them. First-run setup needs a one-time token from the log.
+- **Money:** an append-only ledger in integer cents. Add or remove funds with a comment the kid sees and a private note they don't. Undo is a visible reversal, never an edit.
+- **Jars:** Spend, Save and Give, split 70/20/10 (leftover cents to Spend). Parents rename, add and archive jars and change the split; kids move money between their own jars.
+- **Jar locks:** a parent's lock is hard. A kid can lock their own jar ("Saving for a Switch") and break it only through the gauntlet: a loud warning, a 10-second countdown and a 3-second press-and-hold, enforced by the server ([ADR 0011](docs/adr/0011-server-enforced-gauntlet.md)).
+- **Requests:** a kid asks for money from what's available; it's held until a parent approves (optionally less, with a note), denies, the kid cancels, or it expires. The first parent to decide wins.
+- **Recurring allowance:** weekly, every two weeks or monthly, on the household's calendar. Catches up after downtime, never double-pays, can be paused.
+- **Goals:** "Nintendo Switch, $300" fills from the Save jar's money in priority order. Reaching one tells everyone and offers "Ask to buy it".
+- **Parent-paid interest:** a monthly rate on the average daily balance (so a deposit on the 30th earns almost nothing), with an optional cap and a "leave it for 12 months" projection.
+- **Notifications:** an in-app bell with Approve/Deny inline.
+- **Operations:** nightly SQLite snapshots, a portable export/import between SQLite and Postgres, a Helm chart, `/healthz`, `/readyz`, `/metrics`, signed multi-arch images.
+- Light and dark themes, phone-first, installable as an app (PWA), works without JavaScript, no CDN (works offline on a LAN).
 
-Coming next, per the plan: goals and parent-paid interest (Phase 5), email via SMTP (Phase 3), Helm chart, backups and v1.0 (Phase 6).
+Email notifications (Phase 3 of the [design plan](docs/design/plan.md#14-phasing)) are next.
 
 ## Configuration
 
@@ -45,6 +54,8 @@ Environment variables (or `/data/config.env`). Any variable can also be given as
 | `GOLDBERRY_LISTEN` | `:8080` | |
 | `GOLDBERRY_TRUSTED_PROXIES` | *(none)* | CIDRs whose `X-Forwarded-For` is trusted for logging |
 | `GOLDBERRY_INSECURE_COOKIES` | `false` | Plain-HTTP testing only |
+| `GOLDBERRY_BACKUP_SCHEDULE` | `03:15` | Time of the nightly SQLite snapshot (in `TZ`) |
+| `GOLDBERRY_BACKUP_RETAIN` | `14` | Snapshots to keep in `/data/backups` |
 | `GOLDBERRY_LOG_FORMAT` | `json` | `json` or `text` |
 | `TZ` | `UTC` | Default household time zone at setup |
 
@@ -54,6 +65,7 @@ Environment variables (or `/data/config.env`). Any variable can also be given as
 
 - Health: `GET /healthz` (liveness), `GET /readyz` (database), `GET /metrics` (Prometheus).
 - Locked out as the only parent: `docker compose exec goldberry goldberry admin reset-password <username>` prints a new password.
+- `goldberry backup`, `goldberry export -o dump.jsonl`, `goldberry import dump.jsonl`: see [backup and restore](docs/operations/backup-restore.md).
 - `goldberry migrate` applies migrations without starting the server (they also run at startup).
 
 ## Development
@@ -65,12 +77,15 @@ just run        # http://localhost:8080, SQLite in ./data
 just test       # unit tests + the store contract suite on SQLite
 just pg-up && just test-pg   # the same contract suite on Postgres
 just lint       # gofmt, vet, golangci-lint, migration parity
+just helm       # lint and render the Helm chart
 just e2e        # build the image and run the Playwright smoke test against it
 ```
 
-Layout follows the plan (§13.2): `cmd/goldberry` (CLI), `internal/{config,money,auth,service,scheduler,notify,store,web}`, `migrations/{sqlite,postgres}` (kept in lockstep), `deploy/compose`, `e2e/`, and `docs/` with the [design plan](docs/design/plan.md), the [design board](docs/design/README.md) and [ADRs](docs/adr/README.md).
+Layout follows the plan (§13.2): `cmd/goldberry` (CLI), `internal/{config,money,allowance,auth,service,scheduler,notify,backup,store,web}`, `migrations/{sqlite,postgres}` (kept in lockstep), `deploy/{compose,helm/goldberry}`, `e2e/`, and `docs/` with the [design plan](docs/design/plan.md), the [design board](docs/design/README.md) and [ADRs](docs/adr/README.md).
 
 The service layer owns every money rule; handlers never touch the store. `internal/store/storetest` is the contract suite both database engines must pass — it is the real definition of "pluggable".
+
+Releases: merging the release-please PR tags `vX.Y.Z`, and the `release` workflow publishes signed multi-arch images (with SBOM and provenance) to `ghcr.io/chinny/goldberry` and the chart to `oci://ghcr.io/chinny/charts/goldberry` ([ADR 0012](docs/adr/0012-release-images-with-buildx.md)). Dependabot keeps Go modules, Actions and base images current.
 
 ## Licence
 

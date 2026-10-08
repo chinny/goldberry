@@ -4,6 +4,7 @@
 <form method="post" action="/requests" class="stack-lg">
   {{template "csrf" .}}
   <input type="hidden" name="key" value="{{.NewKey}}">
+  {{if .Val "goal"}}<input type="hidden" name="goal" value="{{.Val "goal"}}">{{end}}
   <fieldset class="field">
     <legend class="label">From which jar?</legend>
     <div class="jar-pick">

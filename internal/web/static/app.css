@@ -368,3 +368,17 @@ ul.plain { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
 .jar-sm .lock-badge { white-space: normal; max-width: 100%; min-height: 26px; padding: 3px 10px; line-height: 18px; }
 .bare-page:has(.gauntlet) .site-foot { background: #B42318; color: #FBE4E1; padding-top: var(--gb-s4); margin: 0; max-width: none; }
 .bare-page:has(.gauntlet) .site-foot a { color: #FFFFFF; }
+
+/* --- Phase 5: goals and interest ------------------------------------------- */
+ul.goals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--gb-s4); }
+.goal { display: flex; align-items: center; gap: var(--gb-s4); }
+.goal-icon { width: 52px; height: 52px; flex: none; border-radius: 16px; background: var(--gb-river-tint); color: var(--gb-river-strong); display: grid; place-items: center; }
+.goal-icon .emoji { font-size: 26px; line-height: 1; }
+.goal-done .goal-icon { background: var(--gb-gold); color: #13312E; }
+.goal-bar { display: block; width: 100%; height: 12px; border-radius: 999px; overflow: hidden; }
+.fill-track { fill: var(--gb-sunk); } .fill-loss { fill: #F6C2BC; }
+.btn-ink { background: var(--gb-ink); color: var(--gb-ground); }
+.btn-ink:hover { color: var(--gb-ground); }
+.credit-ink { color: var(--gb-river-strong); }
+.gauntlet-cost .goal-bar .fill-track { fill: #E9EEEC; }
+form .row label.small { white-space: nowrap; }

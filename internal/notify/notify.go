@@ -28,6 +28,8 @@ const (
 	KidLocked        = "kid_locked"        // → admins
 	AllowancePosted  = "allowance_posted"  // → kid
 	LockOverridden   = "lock_overridden"   // → admins
+	GoalReached      = "goal_reached"      // → kid and admins
+	InterestPosted   = "interest_posted"   // → kid
 )
 
 // Payload is the JSON stored with a notification. Only what the message needs.
@@ -129,6 +131,10 @@ func Render(n store.Notification, cur money.Currency) Message {
 			body = "To move or ask for " + amt + " · " + body
 		}
 		return Message{what, body}
+	case GoalReached:
+		return Message{fmt.Sprintf("%s reached a goal: %s", p.KidName, p.Text), fmt.Sprintf("%s saved in %s", amt, p.Jar)}
+	case InterestPosted:
+		return Message{fmt.Sprintf("Interest: %s", cur.Signed(p.Amount)), p.Jar + " · " + p.Text}
 	default:
 		return Message{n.Kind, ""}
 	}

@@ -4,6 +4,9 @@
 //	goldberry migrate                         apply database migrations and exit
 //	goldberry healthcheck                     exit 0 if the local server answers /healthz
 //	goldberry admin reset-password <username> set a new admin password
+//	goldberry backup                          snapshot the SQLite database now
+//	goldberry export [-o file]                write a portable JSONL dump
+//	goldberry import <file>                   load a dump into an empty database
 //	goldberry version                         print the version
 package main
 
@@ -21,17 +24,20 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/chinny/goldberry/internal/auth"
+	"github.com/chinny/goldberry/internal/backup"
 	"github.com/chinny/goldberry/internal/buildinfo"
 	"github.com/chinny/goldberry/internal/config"
 	"github.com/chinny/goldberry/internal/scheduler"
 	"github.com/chinny/goldberry/internal/service"
 	"github.com/chinny/goldberry/internal/store"
 	"github.com/chinny/goldberry/internal/store/engine"
+	"github.com/chinny/goldberry/internal/store/sqlite"
 	"github.com/chinny/goldberry/internal/web"
 )
 
@@ -53,9 +59,12 @@ func main() {
 		err = admin(args)
 	case "version", "--version", "-v":
 		fmt.Printf("goldberry %s (%s)\n", buildinfo.Version, buildinfo.Commit)
-	case "backup", "export", "import":
-		fmt.Fprintf(os.Stderr, "goldberry %s: not built yet (planned for v1.0, plan §14 phase 6)\n", cmd)
-		os.Exit(2)
+	case "backup":
+		err = backupNow()
+	case "export":
+		err = exportDump(args)
+	case "import":
+		err = importDump(args)
 	case "help", "-h", "--help":
 		usage(os.Stdout)
 	default:
@@ -75,6 +84,9 @@ func usage(w io.Writer) {
   migrate                        apply database migrations and exit
   healthcheck                    exit 0 if the local server answers /healthz
   admin reset-password <user>    set a new admin password (prints one, or reads --password-stdin)
+  backup                         snapshot the SQLite database into /data/backups now
+  export [-o file]               write every table as a portable JSONL dump (stdout by default)
+  import <file>                  load a dump into an empty database (SQLite or Postgres)
   version                        print the version
 `)
 }
@@ -151,6 +163,14 @@ func serve() error {
 			_, err := svc.PostAllowance(ctx)
 			return err
 		}},
+		{Name: "interest", Run: func(ctx context.Context) error {
+			_, err := svc.PostInterest(ctx)
+			return err
+		}},
+		{Name: "goals", Run: func(ctx context.Context) error {
+			_, err := svc.CheckGoals(ctx)
+			return err
+		}},
 		{Name: "request-expiry", Run: func(ctx context.Context) error {
 			n, err := svc.ExpireRequests(ctx)
 			if n > 0 {
@@ -159,6 +179,15 @@ func serve() error {
 			return err
 		}},
 	}}
+	if path, err := sqlite.PathFromURL(cfg.DatabaseURL); err == nil {
+		at, _ := config.ParseClock(cfg.BackupSchedule)
+		loc, _ := time.LoadLocation(cfg.Timezone)
+		nightly := &backup.Nightly{Store: st, Dir: backup.Dir(path), At: at, Retain: cfg.BackupRetain, Loc: loc, Now: time.Now, Log: log}
+		sched.Jobs = append(sched.Jobs, scheduler.Job{Name: "backup", Run: nightly.Run})
+		log.Info("nightly backups on", "dir", nightly.Dir, "at", cfg.BackupSchedule, "retain", cfg.BackupRetain)
+	} else {
+		log.Info("built-in backups are for SQLite; back up Postgres with pg_dump or your operator")
+	}
 	go sched.Run(ctx)
 
 	hs := &http.Server{
@@ -278,4 +307,89 @@ func randomPassword(n int) string {
 		b.WriteByte(alphabet[i.Int64()])
 	}
 	return b.String()
+}
+
+// backupNow is `goldberry backup`: a snapshot next to the nightly ones.
+func backupNow() error {
+	cfg, log, err := setup()
+	if err != nil {
+		return err
+	}
+	path, err := sqlite.PathFromURL(cfg.DatabaseURL)
+	if err != nil {
+		return errors.New("built-in backups are for SQLite; use pg_dump for Postgres, or `goldberry export`")
+	}
+	ctx := context.Background()
+	st, err := open(ctx, cfg, log)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	out := filepath.Join(backup.Dir(path), sqlite.OnDemandName(time.Now()))
+	if err := sqlite.Backup(ctx, st, out); err != nil {
+		return err
+	}
+	fmt.Println("Backup written to", out)
+	fmt.Println("Copy it off this machine: a backup on the same disk is not a backup.")
+	return nil
+}
+
+func exportDump(args []string) error {
+	fs := flag.NewFlagSet("export", flag.ContinueOnError)
+	outPath := fs.String("o", "", "write to this file instead of stdout")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	cfg, log, err := setup()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	st, err := open(ctx, cfg, log)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	var w io.Writer = os.Stdout
+	if *outPath != "" {
+		f, err := os.OpenFile(*outPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		w = f
+	}
+	n, err := st.Export(ctx, w, time.Now())
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(os.Stderr, "exported %d rows\n", n)
+	return nil
+}
+
+func importDump(args []string) error {
+	if len(args) != 1 {
+		return errors.New("usage: goldberry import <file>")
+	}
+	cfg, log, err := setup()
+	if err != nil {
+		return err
+	}
+	f, err := os.Open(args[0]) //nolint:gosec // the operator names the dump to load
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	ctx := context.Background()
+	st, err := open(ctx, cfg, log)
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	n, err := st.Import(ctx, f)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Imported %d rows into %s.\n", n, engine.Redact(cfg.DatabaseURL))
+	return nil
 }

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-# Local and release builds. `ko` (see .ko.yaml) builds the same binary onto
-# the same base; this file additionally creates /data owned by the nonroot
-# user, declares the volume and wires Docker's HEALTHCHECK.
+# The release image (ADR 0012): built multi-arch with buildx. A static
+# CGO_ENABLED=0 binary on distroless, /data owned by the nonroot user, the
+# volume declared and Docker's HEALTHCHECK wired to `goldberry healthcheck`.
 FROM --platform=$BUILDPLATFORM golang:1.26 AS build
 ARG TARGETOS TARGETARCH
 ARG VERSION=dev
@@ -16,6 +16,12 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath \
  && mkdir -p /out/data
 
 FROM gcr.io/distroless/static-debian12:nonroot
+ARG VERSION=dev
+LABEL org.opencontainers.image.title="goldberry" \
+      org.opencontainers.image.description="Self-hosted allowance tracker for kids" \
+      org.opencontainers.image.source="https://github.com/chinny/goldberry" \
+      org.opencontainers.image.licenses="AGPL-3.0-only" \
+      org.opencontainers.image.version="${VERSION}"
 COPY --from=build /out/goldberry /usr/local/bin/goldberry
 COPY --from=build --chown=65532:65532 /out/data /data
 ENV GOLDBERRY_DATABASE_URL=sqlite:///data/goldberry.db

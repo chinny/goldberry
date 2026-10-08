@@ -78,17 +78,38 @@ jobs:
         if: always()
         run: cat e2e/server.log || true
 
-  ko:
+  helm:
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-      - uses: ko-build/setup-ko@v0.9
-      - name: multi-arch build (amd64 + arm64, no push)
-        env:
-          VERSION: ci
-          KO_DOCKER_REPO: ghcr.io/chinny/goldberry
-        run: ko build --push=false ./cmd/goldberry
+      - uses: azure/setup-helm@v4
+      - name: helm lint
+        run: helm lint deploy/helm/goldberry --strict
+      - name: chart refuses two replicas on SQLite
+        run: |
+          if helm template t deploy/helm/goldberry --set replicaCount=2 >/dev/null 2>&1; then
+            echo "replicaCount=2 with SQLite should fail" >&2; exit 1
+          fi
+          helm template t deploy/helm/goldberry --set replicaCount=2 --set postgres.external.url=postgres://u:p@db/goldberry >/dev/null
+      - uses: helm/kind-action@v1
+      - name: build the image into kind
+        run: |
+          docker build -t goldberry:ci --build-arg COMMIT=${{ github.sha }} .
+          kind load docker-image goldberry:ci --name chart-testing
+      - name: install the chart
+        run: |
+          helm install gb deploy/helm/goldberry --wait --timeout 4m \
+            --set image.repository=goldberry --set image.tag=ci --set image.pullPolicy=Never --set insecureCookies=true
+      - name: smoke test the release
+        run: |
+          kubectl logs deploy/gb-goldberry | grep -q setup_token
+          kubectl port-forward svc/gb-goldberry 18080:80 & sleep 3
+          curl -fsS http://127.0.0.1:18080/healthz
+          curl -fsS http://127.0.0.1:18080/readyz
+          curl -fsS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18080/setup | grep -q 200
+          # the SQLite file is on the PVC and writable by the nonroot user
+          kubectl exec deploy/gb-goldberry -- /usr/local/bin/goldberry backup
+      - name: diagnostics
+        if: failure()
+        run: kubectl describe pods; kubectl logs deploy/gb-goldberry --tail=100 || true

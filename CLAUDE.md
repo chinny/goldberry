@@ -8,4 +8,5 @@ Self-hosted kids' allowance tracker. Go + server-rendered HTMX, one container, S
 - **Migrations:** add the same numbered file to both `migrations/sqlite` and `migrations/postgres`; `scripts/check-migrations.sh` enforces it.
 - **Tests:** any new store or money behaviour gets a case in `internal/store/storetest` so it runs on both engines. `just test`, `just test-pg`, `just lint`, `just e2e`.
 - **UI:** follow the board and the tokens in `internal/web/static/app.css`. No inline `style=` (the CSP blocks it), no CDN assets, pages must work without JS.
+- **Releases:** conventional commits; merging the release-please PR tags and publishes (`.github/workflows/release.yml`). The Helm chart version in `deploy/helm/goldberry/Chart.yaml` is bumped by release-please. Operations docs live in `docs/operations/`.
 - **Docs change in the same PR as the code.**
