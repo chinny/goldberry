@@ -85,7 +85,7 @@ Layout follows the plan (§13.2): `cmd/goldberry` (CLI), `internal/{config,money
 
 The service layer owns every money rule; handlers never touch the store. `internal/store/storetest` is the contract suite both database engines must pass — it is the real definition of "pluggable".
 
-Releases: merging the release-please PR tags `vX.Y.Z`, and the `release` workflow publishes signed multi-arch images (with SBOM and provenance) to `ghcr.io/chinny/goldberry` and the chart to `oci://ghcr.io/chinny/charts/goldberry` ([ADR 0012](docs/adr/0012-release-images-with-buildx.md)). Dependabot keeps Go modules, Actions and base images current.
+Releases: merging the release-please PR tags `vX.Y.Z`, and the `release` workflow publishes signed multi-arch images (with SBOM and provenance) to `ghcr.io/chinny/goldberry` and the chart to `oci://ghcr.io/chinny/charts/goldberry` ([ADR 0012](docs/adr/0012-release-images-with-buildx.md)). Dependabot keeps Go modules, Actions and base images current. release-please needs **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests** turned on; without it, run the `release` workflow by hand with the version.
 
 ## Licence
 
