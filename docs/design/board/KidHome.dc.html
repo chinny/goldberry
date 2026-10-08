@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kid home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F6F64}a:hover{color:#155248}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1180px; box-sizing: border-box; display: flex; flex-direction: column; background: #F4F6F5; color: #13312E; font-family: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 17px; line-height: 26px;">
+
+  <header style="display: flex; align-items: center; gap: 12px; padding: 20px 20px 12px;">
+    <div style="width: 48px; height: 48px; border-radius: 16px; background: #E2A81B; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">A</div>
+    <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+      <span style="font-size: 14px; color: #4F6460;">Hi,</span>
+      <strong style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 22px;">Ava</strong>
+    </div>
+    <a href="#" aria-label="Notifications, 1 unread" style="position: relative; width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF; border: 1px solid #D3DCD9; display: flex; align-items: center; justify-content: center; color: #13312E;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+      <span style="position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #B42318; color: #FFFFFF; font-size: 13px; line-height: 22px; font-weight: 700; text-align: center;">1</span>
+    </a>
+  </header>
+
+  <main style="display: flex; flex-direction: column; gap: 14px; padding: 8px 20px 24px;">
+    <div style="border-radius: 20px; background: #FBEFCF; padding: 20px; display: flex; flex-direction: column; gap: 2px; border-top: 8px solid #E2A81B;">
+      <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-weight: 700; font-size: 18px;">Spend</span><span style="font-size: 14px; color: #7A5200; font-weight: 700;">You can ask for</span></div>
+      <div class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 56px; line-height: 60px; letter-spacing: -0.02em;">$15.25</div>
+      <div class="num" style="font-size: 15px; line-height: 22px; color: #7A5200; font-weight: 700;">$3.00 waiting for approval</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+      <div style="border-radius: 20px; background: #DDEEEA; padding: 16px; display: flex; flex-direction: column; gap: 2px; border-top: 8px solid #1F6F64;">
+        <span style="font-weight: 700;">Save</span>
+        <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; line-height: 40px;">$192.00</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; line-height: 18px; color: #155248; font-weight: 700;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 7.5-2"></path></svg>
+          You locked this
+        </span>
+      </div>
+      <div style="border-radius: 20px; background: #F6E1E8; padding: 16px; display: flex; flex-direction: column; gap: 2px; border-top: 8px solid #B4436C;">
+        <span style="font-weight: 700;">Give</span>
+        <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; line-height: 40px;">$12.40</span>
+        <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; line-height: 18px; color: #9A3359; font-weight: 700;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          Locked by a parent
+        </span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <a href="KidRequest.dc.html" style="flex: 1; min-height: 56px; border-radius: 14px; background: #E2A81B; color: #13312E; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        Ask for money
+      </a>
+      <a href="#" style="min-height: 56px; padding: 0 18px; border-radius: 14px; border: 2px solid #13312E; color: #13312E; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; box-sizing: border-box;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13l-4-4M17 17H4l4 4"></path></svg>
+        Move
+      </a>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 22px; line-height: 28px;">My goals</h2>
+        <a href="#" style="font-weight: 700; font-size: 15px;">New goal</a>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 52px; height: 52px; flex: none; border-radius: 14px; background: #DDEEEA; color: #1F6F64; display: flex; align-items: center; justify-content: center;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5"></rect><path d="M7 11v3M5.5 12.5h3"></path><circle cx="16" cy="11.5" r="1"></circle><circle cx="18" cy="13.5" r="1"></circle></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; justify-content: space-between;"><strong>Nintendo Switch</strong><span class="num" style="color: #4F6460;">64%</span></div>
+            <div role="progressbar" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100" aria-label="Nintendo Switch progress" style="height: 14px; border-radius: 999px; background: #E9EEEC; overflow: hidden;"><div style="width: 64%; height: 100%; background: #1F6F64; border-radius: 999px;"></div></div>
+            <span class="num" style="font-size: 14px; line-height: 20px; color: #4F6460;">$108.00 to go</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 52px; height: 52px; flex: none; border-radius: 14px; background: #E2A81B; color: #13312E; display: flex; align-items: center; justify-content: center;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+            <div style="display: flex; flex-direction: column; line-height: 22px;"><strong>LEGO set</strong><span style="font-size: 14px; color: #7A5200; font-weight: 700;">You did it!</span></div>
+            <a href="KidRequest.dc.html" style="min-height: 44px; padding: 0 14px; border-radius: 12px; background: #13312E; color: #FFFFFF; font-weight: 700; font-size: 15px; display: flex; align-items: center; text-decoration: none;">Ask to buy it</a>
+          </div>
+        </div>
+      </div>
+      <p class="num" style="margin: 0; font-size: 14px; line-height: 20px; color: #4F6460;">Leave Save alone and in 12 months you’ll have about <strong style="color: #155248;">$216.40</strong> with interest.</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 4px; margin-top: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+        <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 22px; line-height: 28px;">Recent</h2>
+        <a href="#" style="font-weight: 700; font-size: 15px;">All activity</a>
+      </div>
+      <div style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 4px 16px;">
+        <div style="display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #E9EEEC;">
+          <div style="display: flex; flex-direction: column; line-height: 20px;"><strong>Movie with Jess</strong><span style="font-size: 14px; color: #4F6460;">Asked · Spend · today</span></div>
+          <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 999px; background: #FBEFCF; color: #7A5200; font-size: 14px; font-weight: 700;">Pending</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #E9EEEC;">
+          <div style="display: flex; flex-direction: column; line-height: 20px;"><strong>Weekly allowance</strong><span style="font-size: 14px; color: #4F6460;">Split 70 / 20 / 10 · Sat</span></div>
+          <span class="num" style="font-weight: 700; color: #155248;">+$10.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; gap: 12px; padding: 12px 0;">
+          <div style="display: flex; flex-direction: column; line-height: 20px;"><strong>Mowed the lawn</strong><span style="font-size: 14px; color: #4F6460;">From Dad · Spend · Fri</span></div>
+          <span class="num" style="font-weight: 700; color: #155248;">+$5.00</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div style="flex: 1;"></div>
+  <nav aria-label="Main" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #D3DCD9; background: #FFFFFF; padding: 6px 8px 10px;">
+    <a href="#" aria-current="page" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; font-weight: 700; color: #1F6F64; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>
+      Home
+    </a>
+    <a href="#" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; color: #4F6460; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>
+      Activity
+    </a>
+    <a href="#" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; color: #4F6460; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg>
+      Goals
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

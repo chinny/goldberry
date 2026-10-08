@@ -1,0 +1,42 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-08T12:00:00Z"},
+  "title": "Goldberry Design",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1280, "h": 1880, "title": "Foundations & components"},
+    "KidLogin.dc.html": {"x": 0, "y": 2300, "w": 390, "h": 844, "title": "Kid · PIN sign-in", "is_interactive": true},
+    "KidHome.dc.html": {"x": 470, "y": 2300, "w": 390, "h": 1180, "title": "Kid · Home"},
+    "KidRequest.dc.html": {"x": 940, "y": 2300, "w": 390, "h": 844, "title": "Kid · Ask for money"},
+    "LockGauntlet.dc.html": {"x": 1410, "y": 2300, "w": 390, "h": 844, "title": "Kid · Break my lock"},
+    "AdminHome.dc.html": {"x": 0, "y": 3900, "w": 390, "h": 1100, "title": "Parent · Dashboard"},
+    "Notifications.dc.html": {"x": 470, "y": 3900, "w": 390, "h": 844, "title": "Parent · Notifications"},
+    "AddFunds.dc.html": {"x": 940, "y": 3900, "w": 390, "h": 900, "title": "Parent · Add or remove funds"},
+    "AdminKid.dc.html": {"x": 1410, "y": 3900, "w": 390, "h": 1180, "title": "Parent · One kid"},
+    "DesktopAdmin.dc.html": {"x": 0, "y": 5500, "w": 1440, "h": 1000, "title": "Desktop · Parent dashboard", "expand": "fill"},
+    "DesktopAdminKid.dc.html": {"x": 1520, "y": 5500, "w": 1440, "h": 1180, "title": "Desktop · One kid & ledger", "expand": "fill"},
+    "DesktopKidHome.dc.html": {"x": 3040, "y": 5500, "w": 1440, "h": 960, "title": "Desktop · Kid home", "expand": "fill"}
+  },
+  "order": [
+    "Main.dc.html",
+    "KidLogin.dc.html",
+    "KidHome.dc.html",
+    "KidRequest.dc.html",
+    "LockGauntlet.dc.html",
+    "AdminHome.dc.html",
+    "Notifications.dc.html",
+    "AddFunds.dc.html",
+    "AdminKid.dc.html",
+    "DesktopAdmin.dc.html",
+    "DesktopAdminKid.dc.html",
+    "DesktopKidHome.dc.html"
+  ],
+  "notes": {
+    "t_system": {"x": 0, "y": -300, "text": "Goldberry design system", "kind": "title1", "maxW": 1280},
+    "t_kid": {"x": 0, "y": 2000, "text": "Kid screens (tablet & phone)", "kind": "title1", "maxW": 1800},
+    "t_parent": {"x": 0, "y": 3600, "text": "Parent screens (phone)", "kind": "title1", "maxW": 1800},
+    "t_desktop": {"x": 0, "y": 5200, "text": "Desktop (parents at a computer, kids on a laptop)", "kind": "title1", "maxW": 4480}
+  },
+  "designSystems": []
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parent notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F6F64}a:hover{color:#155248}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F4F6F5; color: #13312E; font-family: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 17px; line-height: 26px;">
+  <header style="display: flex; align-items: center; gap: 4px; padding: 16px 16px 8px;">
+    <a href="AdminHome.dc.html" aria-label="Back to dashboard" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #13312E;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <h1 style="flex: 1; margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 34px;">Notifications</h1>
+    <button type="button" style="min-height: 44px; padding: 0 8px; border: 0; background: transparent; color: #1F6F64; font: inherit; font-size: 15px; font-weight: 700;">Mark all read</button>
+  </header>
+
+  <div role="alert" style="margin: 4px 16px 8px; padding: 12px 14px; border-radius: 12px; background: #FBE4E1; color: #13312E; display: flex; gap: 10px; align-items: flex-start; font-size: 15px; line-height: 22px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px;"><path d="M12 3l10 18H2z"></path><path d="M12 10v4M12 17.5v.01"></path></svg>
+    <span><strong>Email isn’t sending.</strong> 3 messages are waiting. Nothing is lost — it’s all here. <a href="#" style="color: #B42318; font-weight: 700;">Check SMTP</a></span>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px;">
+    <li style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <span aria-label="Unread" style="width: 10px; height: 10px; flex: none; margin-top: 8px; border-radius: 999px; background: #1F6F64;"></span>
+        <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+          <span><strong>Ava</strong> asked for <strong class="num">$8.00</strong> from Spend</span>
+          <span style="font-size: 14px; color: #4F6460;">“Movie with Jess” · 12 min ago</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; padding-left: 22px;">
+        <button type="button" style="flex: 1; min-height: 44px; border: 0; border-radius: 12px; background: #1F6F64; color: #FFFFFF; font: inherit; font-weight: 700;">Approve</button>
+        <button type="button" style="flex: 1; min-height: 44px; border: 2px solid #13312E; border-radius: 12px; background: #FFFFFF; color: #13312E; font: inherit; font-weight: 700;">Deny</button>
+      </div>
+    </li>
+
+    <li style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <span aria-label="Unread" style="width: 10px; height: 10px; flex: none; margin-top: 8px; border-radius: 999px; background: #1F6F64;"></span>
+        <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+          <span><strong>Leo’s account is locked</strong> after 10 wrong PINs</span>
+          <span style="font-size: 14px; color: #4F6460;">Last try on the kitchen tablet · 1 h ago</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; padding-left: 22px;">
+        <button type="button" style="min-height: 44px; padding: 0 16px; border: 2px solid #13312E; border-radius: 12px; background: #FFFFFF; color: #13312E; font: inherit; font-weight: 700;">Unlock Leo</button>
+        <button type="button" style="min-height: 44px; padding: 0 12px; border: 0; background: transparent; color: #1F6F64; font: inherit; font-weight: 700;">Reset PIN</button>
+      </div>
+    </li>
+
+    <li style="background: #F4F6F5; border: 1px solid #D3DCD9; border-radius: 16px; padding: 14px; display: flex; gap: 12px; align-items: flex-start;">
+      <span style="width: 10px; flex: none;"></span>
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+        <span><strong>Leo</strong> asked for <strong class="num">$4.00</strong> from Spend</span>
+        <span style="font-size: 14px; color: #155248; font-weight: 700;">Approved by Sam · yesterday</span>
+      </div>
+    </li>
+
+    <li style="background: #F4F6F5; border: 1px solid #D3DCD9; border-radius: 16px; padding: 14px; display: flex; gap: 12px; align-items: flex-start;">
+      <span style="width: 10px; flex: none;"></span>
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+        <span><strong>Ava</strong> reached her goal <strong>LEGO set</strong></span>
+        <span style="font-size: 14px; color: #4F6460;">Mon</span>
+      </div>
+    </li>
+
+    <li style="background: #F4F6F5; border: 1px solid #D3DCD9; border-radius: 16px; padding: 14px; display: flex; gap: 12px; align-items: flex-start;">
+      <span style="width: 10px; flex: none;"></span>
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+        <span><strong>Leo</strong> broke his own lock on Save, just once</span>
+        <span class="num" style="font-size: 14px; color: #4F6460;">Moved $6.00 to Spend · Sun</span>
+      </div>
+    </li>
+  </ul>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
