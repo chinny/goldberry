@@ -1,0 +1,35 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}{{$kid := .D.Kid}}
+<form method="post" action="/admin/kids/{{$kid.ID}}/allowance" class="stack-lg">
+  {{template "csrf" .}}
+  {{with .D.Schedule}}<input type="hidden" name="schedule" value="{{.ID}}">{{end}}
+  <div class="field">
+    <label for="amount">Amount</label>
+    <div class="amount-input"><span>{{.Symbol}}</span><input id="amount" name="amount" inputmode="decimal" value="{{.Val "amount"}}" placeholder="10.00" required autofocus></div>
+  </div>
+  <fieldset class="field">
+    <legend class="label">How often</legend>
+    <label class="check"><input type="radio" name="cadence" value="weekly"{{if .Checked "cadence" "weekly"}} checked{{end}}> Every week on
+      <select name="weekday" aria-label="Day of the week">{{range .D.Weekdays}}<option value="{{printf "%d" .}}"{{if eq ($v.Val "weekday") (printf "%d" .)}} selected{{end}}>{{.}}</option>{{end}}</select></label>
+    <label class="check"><input type="radio" name="cadence" value="biweekly"{{if .Checked "cadence" "biweekly"}} checked{{end}}> Every two weeks, starting
+      <input type="date" name="anchor" value="{{.Val "anchor"}}" aria-label="First paying day"></label>
+    <label class="check"><input type="radio" name="cadence" value="monthly"{{if .Checked "cadence" "monthly"}} checked{{end}}> Every month on day
+      <input class="pct-input" type="number" name="day_of_month" min="1" max="31" value="{{.Val "day_of_month"}}" aria-label="Day of the month"></label>
+    <span class="hint">Day 29–31 pays on the last day of shorter months.</span>
+  </fieldset>
+  <div class="field">
+    <label for="jar">Into</label>
+    <select id="jar" name="jar">
+      <option value="">{{$kid.DisplayName}}’s split ({{.D.SplitSummary}})</option>
+      {{range .D.Jars}}<option value="{{.ID}}"{{if $v.Checked "jar" .ID}} selected{{end}}>Only {{.Name}}</option>{{end}}
+    </select>
+  </div>
+  <div class="field">
+    <label for="comment">Label <span class="hint">{{$kid.DisplayName}} sees it in the ledger</span></label>
+    <input id="comment" name="comment" value="{{.Val "comment"}}" maxlength="140" placeholder="Weekly allowance">
+  </div>
+  <p class="caption">It starts on the next paying day after today. If Goldberry is off on a pay day, it catches up when it’s back (up to 8 payments).</p>
+  <button class="btn btn-primary btn-block" type="submit">Save allowance</button>
+</form>
+{{end}}

@@ -1,14 +1,30 @@
 {{define "main"}}
 {{$v := .}}
 <section class="stack" aria-label="My jars">
-  {{range .D.Jars}}
+  {{range $i, $j := .D.Jars}}{{if eq $i 0}}
   <div class="jar jar-{{jarClass .Kind}}">
-    <div class="spread"><span class="jar-name">{{.Name}}</span><span class="tag">You can ask for</span></div>
+    <div class="spread"><span class="jar-name">{{.Name}}</span>{{if .Locked}}{{template "lock-badge" (pair $v .)}}{{else}}<span class="tag">You can ask for</span>{{end}}</div>
     <div class="big">{{$v.Money .Available}}</div>
     {{if .Held}}<div class="held">{{$v.Money .Held}} waiting for approval</div>{{end}}
+    {{if not .Locked}}<a class="jar-action" href="/jars/{{.ID}}/lock">{{template "i-lock"}} Lock it</a>{{end}}
+  </div>
+  {{end}}{{end}}
+  {{if gt (len .D.Jars) 1}}
+  <div class="jar-grid">
+    {{range $i, $j := .D.Jars}}{{if gt $i 0}}
+    <div class="jar jar-sm jar-{{jarClass .Kind}}">
+      <span class="jar-name">{{.Name}}</span>
+      <div class="money-l">{{$v.Money .Available}}</div>
+      {{if .Held}}<div class="held small">{{$v.Money .Held}} waiting</div>{{end}}
+      {{if .Locked}}{{template "lock-badge" (pair $v .)}}{{else}}<a class="jar-action" href="/jars/{{.ID}}/lock">{{template "i-lock"}} Lock it</a>{{end}}
+    </div>
+    {{end}}{{end}}
   </div>
   {{end}}
-  <a class="btn btn-kid btn-block" href="/requests/new">{{template "i-plus"}} Ask for money</a>
+  <div class="row">
+    <a class="btn btn-kid btn-block grow" href="/requests/new">{{template "i-plus"}} Ask for money</a>
+    {{if gt (len .D.Jars) 1}}<a class="btn btn-outline btn-block btn-auto" href="/move">{{template "i-move"}} Move</a>{{end}}
+  </div>
 </section>
 
 {{if .D.Pending}}
@@ -31,6 +47,6 @@
 
 <section class="stack">
   <div class="spread"><h2>Recent</h2><a href="/ledger"><strong>All activity</strong></a></div>
-  {{template "kid-entries" (pair . .D.Recent)}}
+  {{template "ledger-rows" (pair . .D.Recent)}}
 </section>
 {{end}}

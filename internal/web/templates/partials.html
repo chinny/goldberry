@@ -53,22 +53,55 @@
 
 {{define "status-pill"}}<span class="pill pill-{{.}}">{{if eq (print .) "pending"}}Waiting{{else if eq (print .) "approved"}}Approved{{else if eq (print .) "denied"}}Not this time{{else if eq (print .) "cancelled"}}Cancelled{{else}}Expired{{end}}</span>{{end}}
 
-{{/* A kid's ledger rows. Private notes are never shown to kids. */}}
-{{define "kid-entries"}}
+{{define "kid-entries"}}{{template "ledger-rows" .}}{{end}}
+
+{{define "i-move"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>{{end}}
+{{define "i-lock"}}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>{{end}}
+{{define "i-unlock"}}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>{{end}}
+{{define "i-lock-lg"}}<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><path d="M12 15v2"/></svg>{{end}}
+
+{{/* Split bar: SVG attributes, not inline styles, so the CSP allows it. */}}
+{{define "split-bar"}}
+<svg class="split-bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="Split {{.SplitSummary}}">
+  {{$x := 0}}{{range .Jars}}{{if .BPS}}<rect class="fill-{{jarClass .Kind}}" x="{{pct $x}}" y="0" width="{{pct .BPS}}" height="10"/>{{$x = add $x .BPS}}{{end}}{{end}}
+</svg>
+{{end}}
+
+{{/* A lock badge for a jar. Call with (pair $view jarView). */}}
+{{define "lock-badge"}}
+{{with .X.ParentLock}}<span class="lock-badge lock-hard">{{template "i-lock"}} {{if $.V.IsKid}}Locked by a parent{{else}}Parent lock{{end}}{{if .UntilDate}} · until {{.UntilDate}}{{end}}</span>
+{{else}}{{with .X.SelfLock}}{{if $.V.IsKid}}<a class="lock-badge lock-soft" href="/gauntlet?then=remove&amp;jar={{.JarID}}&amp;lock={{.ID}}">{{template "i-unlock"}} You locked this</a>{{else}}<span class="lock-badge lock-soft">{{template "i-unlock"}} Kid’s self-lock</span>{{end}}{{end}}
+{{end}}
+{{end}}
+
+{{/* Ledger rows (a split deposit or a move shows as one row). Call with (pair $view entries). */}}
+{{define "ledger-rows"}}
 {{$v := .V}}
 {{if .X}}
 <ul class="list">
-  {{range .X}}
-  <li{{if .Reversed}} class="struck"{{end}}>
+  {{range rows .X}}
+  <li{{if .AllReversed}} class="struck"{{end}}>
     <div class="what">
-      <strong>{{if .Comment}}{{.Comment}}{{else if eq .Kind "deposit"}}Money added{{else if eq .Kind "withdrawal"}}Money out{{else if eq .Kind "reversal"}}Undo{{else}}{{.Kind}}{{end}}</strong>
-      <span class="meta">{{if eq .Kind "reversal"}}Undone by {{.ActorName}}{{else if .Reversed}}Undone{{else if .RequestID}}Approved by {{.ActorName}}{{else if .ActorName}}From {{.ActorName}}{{else}}Automatic{{end}} · {{.JarName}} · {{$v.When .EffectiveAt}}</span>
+      <strong>{{if .IsMove}}Moved {{.Jars}}{{else if .Comment}}{{.Comment}}{{else if eq .Kind "deposit"}}Money added{{else if eq .Kind "withdrawal"}}Money out{{else if eq .Kind "reversal"}}Undo{{else}}{{.Kind}}{{end}}</strong>
+      <span class="meta">{{if eq .Kind "reversal"}}Undone by {{.ActorName}}{{else if .AllReversed}}Undone{{else if eq .Kind "allowance"}}Allowance{{else if .RequestID}}Approved by {{.ActorName}}{{else if .ActorName}}{{if $v.IsKid}}From {{end}}{{.ActorName}}{{else}}Automatic{{end}}{{if not .IsMove}} · {{.Jars}}{{end}} · {{$v.When .EffectiveAt}}</span>
+      {{if and $v.IsAdmin .PrivateNote}}<span class="note">Note: {{.PrivateNote}}</span>{{end}}
     </div>
-    <span class="amt {{if gt .Amount 0}}amt-credit{{else}}amt-debit{{end}}">{{$v.Signed .Amount}}</span>
+    <span class="amt {{if .IsMove}}amt-move{{else if gt .Amount 0}}amt-credit{{else}}amt-debit{{end}}">{{if .IsMove}}{{$v.Money .Amount}}{{else}}{{$v.Signed .Amount}}{{end}}</span>
+    {{if and $v.IsAdmin .Reversible}}
+    <details class="inline-confirm">
+      <summary class="icon-btn" aria-label="Undo {{.Comment}}">{{template "i-undo"}}</summary>
+      <form method="post" action="/admin/entries/{{.ID}}/reverse" class="popover">
+        <input type="hidden" name="_csrf" value="{{$v.CSRF}}">
+        <input type="hidden" name="next" value="/admin/kids/{{.KidID}}">
+        <p class="small">Undo {{$v.Signed .Amount}}{{if gt .Count 1}} across {{.Jars}}{{end}}? The original stays in the history.</p>
+        <button class="btn btn-danger btn-sm" type="submit">Undo entry</button>
+      </form>
+    </details>
+    {{end}}
   </li>
   {{end}}
 </ul>
 {{else}}
-<p class="card empty-state">Nothing here yet. When a grown-up adds money, it shows up here.</p>
+<p class="card empty-state">{{if $v.IsKid}}Nothing here yet. When a grown-up adds money, it shows up here.{{else}}No money yet.{{end}}</p>
 {{end}}
 {{end}}

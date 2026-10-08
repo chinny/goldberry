@@ -24,8 +24,10 @@ func (s *Server) adminHome(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 
 type adminKidData struct {
 	service.KidView
-	Ledger []store.LedgerEntry
-	Login  service.LoginState
+	Ledger    []store.LedgerEntry
+	JarFilter string
+	Login     service.LoginState
+	Overrides []store.LockOverride
 }
 
 func (s *Server) loadKid(w http.ResponseWriter, r *http.Request) (service.KidView, bool) {
@@ -47,7 +49,8 @@ func (s *Server) adminKid(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		return
 	}
 	ctx := r.Context()
-	ledger, err := s.svc.Ledger(ctx, kv.Kid.ID, 200)
+	jarFilter := r.URL.Query().Get("jar")
+	ledger, err := s.svc.Store.ListLedger(ctx, store.LedgerFilter{KidID: kv.Kid.ID, JarID: jarFilter, Limit: 200})
 	if err != nil {
 		s.serverError(w, r, err)
 		return
@@ -57,7 +60,8 @@ func (s *Server) adminKid(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		s.serverError(w, r, err)
 		return
 	}
-	v := s.newView(w, r, kv.Kid.DisplayName, adminKidData{KidView: kv, Ledger: ledger, Login: states[kv.Kid.ID]})
+	v := s.newView(w, r, kv.Kid.DisplayName, adminKidData{KidView: kv, Ledger: ledger, JarFilter: jarFilter,
+		Login: states[kv.Kid.ID], Overrides: s.lockActivity(r, kv.Kid.ID)})
 	v.Nav, v.Back = "kid:"+kv.Kid.ID, "/admin"
 	s.render(w, r, http.StatusOK, "admin_kid", v)
 }
@@ -77,8 +81,10 @@ func (s *Server) adminFundsPage(w http.ResponseWriter, r *http.Request, c *reqCt
 	v := s.newView(w, r, kv.Kid.DisplayName+"’s money", fundsData{KidView: kv, Chips: defaultChips})
 	v.Nav, v.Back = "kid:"+kv.Kid.ID, "/admin/kids/"+kv.Kid.ID
 	v.Form.Set("direction", "add")
+	v.Form.Set("jar", "split")
 	if r.URL.Query().Get("direction") == "remove" {
 		v.Form.Set("direction", "remove")
+		v.Form.Set("jar", kv.Jars[0].ID)
 	}
 	s.render(w, r, http.StatusOK, "admin_funds", v)
 }
@@ -100,8 +106,17 @@ func (s *Server) adminFundsSubmit(w http.ResponseWriter, r *http.Request, c *req
 		return
 	}
 	remove := f.Get("direction") == "remove"
-	e, err := s.svc.PostEntry(r.Context(), *c.User, service.EntryInput{
-		KidID: kv.Kid.ID, JarID: f.Get("jar"), Amount: amount, Remove: remove,
+	jar := f.Get("jar")
+	if jar == "split" && remove {
+		again("Pick one jar to remove money from.")
+		return
+	}
+	useSplit := jar == "split"
+	if useSplit {
+		jar = ""
+	}
+	es, err := s.svc.PostEntry(r.Context(), *c.User, service.EntryInput{
+		KidID: kv.Kid.ID, JarID: jar, UseSplit: useSplit, Amount: amount, Remove: remove,
 		Comment: f.Get("comment"), PrivateNote: f.Get("private_note"), IdempotencyKey: f.Get("key"),
 	})
 	if err != nil {
@@ -116,7 +131,15 @@ func (s *Server) adminFundsSubmit(w http.ResponseWriter, r *http.Request, c *req
 	if remove {
 		verb = "Removed"
 	}
-	s.flash(w, "ok", verb+" "+c.Cur.Format(abs(e.Amount))+" · "+kv.Kid.DisplayName+" can see it now.")
+	var total int64
+	for _, e := range es {
+		total += abs(e.Amount)
+	}
+	where := ""
+	if len(es) > 1 {
+		where = " across " + strconv.Itoa(len(es)) + " jars"
+	}
+	s.flash(w, "ok", verb+" "+c.Cur.Format(total)+where+" · "+kv.Kid.DisplayName+" can see it now.")
 	http.Redirect(w, r, "/admin/kids/"+kv.Kid.ID, http.StatusSeeOther)
 }
 
@@ -128,12 +151,12 @@ func abs(v int64) int64 {
 }
 
 func (s *Server) adminReverse(w http.ResponseWriter, r *http.Request, c *reqCtx) {
-	e, err := s.svc.Reverse(r.Context(), *c.User, r.PathValue("id"))
+	es, err := s.svc.Reverse(r.Context(), *c.User, r.PathValue("id"))
 	if err != nil {
 		s.fail(w, r, "/admin", err)
 		return
 	}
-	s.back(w, r, "/admin/kids/"+e.KidID, "ok", "Undone. Both entries stay in the ledger.")
+	s.back(w, r, "/admin/kids/"+es[0].KidID, "ok", "Undone. The original and the undo both stay in the ledger.")
 }
 
 func (s *Server) adminDecide(approve bool) handler {

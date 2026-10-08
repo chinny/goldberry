@@ -293,3 +293,78 @@ a.avatar { text-decoration: none; }
 .badge { color: var(--gb-on-danger, #FFFFFF); }
 @media (prefers-color-scheme: dark) { :root { --gb-on-danger: #0E1A19; } }
 .kid-total { display: flex; flex-direction: column; align-items: flex-end; line-height: 22px; }
+
+/* --- Phase 4: jars, locks, allowance -------------------------------------- */
+.jar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--gb-s3); }
+.jar-sm { padding: 16px; padding-top: 18px; }
+.jar-sm .money-l { font-size: 30px; line-height: 36px; }
+.jar-tiles { display: grid; gap: var(--gb-s3); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.jar-action { font-size: 14px; font-weight: 700; color: var(--gb-ink-muted); display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; }
+.lock-badge { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 10px; border-radius: 999px;
+  font-size: 13px; font-weight: 700; white-space: nowrap; text-decoration: none; }
+.lock-hard { background: var(--gb-ink); color: var(--gb-ground); }
+.lock-soft { border: 2px dashed var(--gb-river); color: var(--gb-river-strong); background: transparent; }
+a.lock-soft:hover { background: var(--gb-river-tint); }
+.jar-give .lock-soft { border-color: var(--gb-berry); color: var(--gb-berry-ink); }
+.lock-line { display: flex; justify-content: space-between; gap: var(--gb-s2); align-items: baseline; }
+.btn-auto { width: auto; padding: 0 var(--gb-s5); }
+.amt-move { color: var(--gb-ink-muted); }
+.stack-sm { display: flex; flex-direction: column; gap: 6px; }
+ul.plain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--gb-s2); font-size: 15px; }
+.list-flat > li { flex-wrap: wrap; }
+.pct-input { width: 84px !important; min-height: 44px !important; text-align: right; }
+.pick-row { flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; text-decoration: none; }
+.chip-on { border: 2px solid var(--gb-river); background: var(--gb-river-tint); font-weight: 700; }
+@media (max-width: 600px) { .hide-phone { display: none; } }
+
+.split-bar { display: block; width: 100%; height: 12px; border-radius: 999px; overflow: hidden; background: var(--gb-sunk); }
+.fill-spend { fill: var(--gb-gold); } .fill-save { fill: var(--gb-river); } .fill-give { fill: var(--gb-berry); } .fill-custom { fill: var(--gb-slate); }
+
+/* Jar picker cards (ask for money, move). */
+.jar-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+.pick { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 76px; padding: 10px; border-radius: 14px; border: 2px solid var(--gb-line); background: var(--gb-surface); cursor: pointer; text-align: center; }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick:has(input:checked) { border-color: var(--gb-gold); background: var(--gb-gold-tint); }
+.pick-save:has(input:checked) { border-color: var(--gb-river); background: var(--gb-river-tint); }
+.pick-give:has(input:checked) { border-color: var(--gb-berry); background: var(--gb-berry-tint); }
+.pick:has(input:focus-visible) { outline: 3px solid var(--gb-river); outline-offset: 2px; }
+.pick-soft { border-style: dashed; border-color: var(--gb-river); }
+.pick-hard { background: var(--gb-sunk); color: var(--gb-ink-muted); cursor: not-allowed; }
+
+/* The gauntlet: loud, kind, and a little annoying (plan §5.4). */
+.bare-page:has(.gauntlet) { background: #B42318; }
+.gauntlet { min-height: 100vh; background: #B42318; color: #FFFFFF; }
+.gauntlet-inner { max-width: 520px; margin: 0 auto; padding: var(--gb-s5) var(--gb-s5) var(--gb-s6); display: flex; flex-direction: column; gap: var(--gb-s5); }
+.gauntlet h1 { font-size: 36px; line-height: 40px; color: #FFFFFF; }
+.hazard { height: 14px; border-radius: 999px; background: repeating-linear-gradient(-45deg, #F0C04A 0 14px, #13312E 14px 28px); }
+.gauntlet-head { align-items: center; gap: var(--gb-s4); }
+.gauntlet-icon { width: 76px; height: 76px; flex: none; border-radius: 22px; background: #F0C04A; color: #13312E; display: grid; place-items: center; }
+.gauntlet-quote { background: #8E1A12; border-radius: var(--gb-r-lg); padding: var(--gb-s4) var(--gb-s5); }
+.gauntlet-quote .quote { font-family: var(--gb-display); font-weight: 800; font-size: 26px; line-height: 32px; margin-top: 4px; }
+.gauntlet-cost { background: #FFFFFF; color: #13312E; border-radius: var(--gb-r-lg); padding: var(--gb-s4) var(--gb-s5); display: flex; flex-direction: column; gap: var(--gb-s2); }
+.gauntlet-cost .cost { color: #B42318; }
+.countdown { gap: var(--gb-s4); }
+.count-ring { width: 64px; height: 64px; flex: none; border-radius: 999px; border: 5px solid #F0C04A; display: grid; place-items: center;
+  font-family: var(--gb-display); font-weight: 800; font-size: 28px; }
+.gauntlet .label { color: #FFFFFF; }
+.gauntlet-choice { display: flex; align-items: center; gap: var(--gb-s3); min-height: 56px; padding: 0 var(--gb-s4); border-radius: 14px;
+  background: #8E1A12; font-weight: 400; font-size: 17px; cursor: pointer; }
+.gauntlet-choice input { width: 22px; height: 22px; accent-color: #F0C04A; }
+.gauntlet-keep { background: #FFFFFF; color: #13312E; font-size: 20px; }
+.gauntlet-keep:hover { color: #13312E; background: #F4F6F5; }
+.gauntlet-break { position: relative; overflow: hidden; background: transparent; color: #FFFFFF; border: 2px solid #F2877B; font-size: 19px; user-select: none; touch-action: none; }
+.gauntlet-break[disabled] { opacity: 0.6; }
+.gauntlet-break .hold-fill { position: absolute; inset: 0; width: 0; background: rgba(255, 255, 255, 0.25); }
+.gauntlet-break .hold-label { position: relative; }
+.gauntlet-foot { text-align: center; font-size: 14px; line-height: 20px; color: #FBE4E1; }
+.gauntlet .alert-error { background: #FFFFFF; }
+.gauntlet a:focus-visible, .gauntlet button:focus-visible, .gauntlet input:focus-visible { outline-color: #F0C04A; }
+@media (prefers-reduced-motion: no-preference) {
+  .gauntlet-icon { animation: gb-shake 0.6s ease-in-out 0.3s 2; }
+  @keyframes gb-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+}
+.jar-sm .lock-badge { white-space: normal; max-width: 100%; min-height: 26px; padding: 3px 10px; line-height: 18px; }
+.bare-page:has(.gauntlet) .site-foot { background: #B42318; color: #FBE4E1; padding-top: var(--gb-s4); margin: 0; max-width: none; }
+.bare-page:has(.gauntlet) .site-foot a { color: #FFFFFF; }

@@ -221,3 +221,60 @@ type RequestFilter struct {
 
 // NewID returns a UUIDv7 string: time-sortable and dialect-independent.
 func NewID() string { return uuid.Must(uuid.NewV7()).String() }
+
+// Schedule is a recurring allowance (plan §7.2). Calendar dates are
+// "YYYY-MM-DD" in the household time zone.
+type Schedule struct {
+	ID              string
+	KidID           string
+	Amount          int64
+	Cadence         string // weekly | biweekly | monthly
+	Weekday         int    // weekly: 0 = Sunday … 6 = Saturday
+	DayOfMonth      int    // monthly: 1–31
+	AnchorDate      string // biweekly
+	TargetJarID     string // "" = use the kid's split rule
+	CommentTemplate string
+	Active          bool
+	LastOccurrence  string // newest day already paid (or the creation/resume day)
+	CreatedBy       string
+	CreatedAt       time.Time
+}
+
+// JarLock restricts money leaving a jar (plan §5.4). An admin lock is hard;
+// a kid's self-lock is soft and can be overridden after the gauntlet.
+type JarLock struct {
+	ID        string
+	JarID     string
+	ToJarID   string // "" = every route out and withdrawal requests
+	SetByRole Role
+	SetBy     string
+	Reason    string
+	UntilDate string // "" = until removed; lifts at the start of this day
+	CreatedAt time.Time
+	RemovedBy string
+	RemovedAt *time.Time
+
+	// Filled by list queries.
+	KidID     string
+	JarName   string
+	ToJarName string
+	SetByName string
+}
+
+// Hard reports whether the kid can't get past this lock.
+func (l JarLock) Hard() bool { return l.SetByRole == RoleAdmin }
+
+// LockOverride records a kid breaking their own lock.
+type LockOverride struct {
+	ID            string
+	LockID        string
+	KidID         string
+	Action        string // once | removed
+	LedgerEntryID string
+	RequestID     string
+	CreatedAt     time.Time
+
+	// Filled by list queries.
+	Reason  string
+	JarName string
+}

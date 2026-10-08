@@ -4,20 +4,22 @@
 <form method="post" action="/requests" class="stack-lg">
   {{template "csrf" .}}
   <input type="hidden" name="key" value="{{.NewKey}}">
-  {{if gt (len .D.Jars) 1}}
   <fieldset class="field">
     <legend class="label">From which jar?</legend>
-    <div class="row-wrap">
-      {{range .D.Jars}}
-      <label class="check"><input type="radio" name="jar" value="{{.ID}}"{{if $v.Checked "jar" .ID}} checked{{end}}> {{.Name}} · {{$v.Money .Available}}</label>
+    <div class="jar-pick">
+      {{range .D.Jars}}{{$lock := .RequestLock}}
+      <label class="pick pick-{{jarClass .Kind}}{{if $lock}}{{if $lock.Hard}} pick-hard{{else}} pick-soft{{end}}{{end}}">
+        <input type="radio" name="jar" value="{{.ID}}"{{if $v.Checked "jar" .ID}} checked{{end}}{{if and $lock $lock.Hard}} disabled{{end}}>
+        <strong>{{.Name}}</strong>
+        <span class="small">{{if $lock}}{{if $lock.Hard}}Parent lock{{else}}You locked it{{end}}{{else}}{{$v.Money .Available}}{{end}}</span>
+      </label>
       {{end}}
     </div>
   </fieldset>
-  {{else}}{{with index .D.Jars 0}}<input type="hidden" name="jar" value="{{.ID}}">{{end}}{{end}}
   <div class="field">
     <label for="amount">How much?</label>
     <div class="amount-input"><span>{{.Symbol}}</span><input id="amount" name="amount" inputmode="decimal" value="{{.Val "amount"}}" placeholder="0.00" autocomplete="off" required autofocus></div>
-    <span class="hint">You can ask for up to {{.Money .D.Available}}.</span>
+    <span class="hint">{{range .D.Jars}}{{if $v.Checked "jar" .ID}}You can ask for up to {{$v.Money .Available}} from {{.Name}}.{{end}}{{end}}</span>
   </div>
   <div class="field">
     <label for="reason">What’s it for?</label>

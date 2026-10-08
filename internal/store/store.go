@@ -58,6 +58,9 @@ type Reader interface {
 
 	GetLedgerEntry(ctx context.Context, id string) (LedgerEntry, error)
 	GetLedgerEntryByKey(ctx context.Context, key string) (LedgerEntry, error)
+	// GetLedgerEntryByKeyPrefix finds an entry whose idempotency key starts
+	// with prefix (the parts of a split deposit share "<form key>:").
+	GetLedgerEntryByKeyPrefix(ctx context.Context, prefix string) (LedgerEntry, error)
 	ListLedger(ctx context.Context, f LedgerFilter) ([]LedgerEntry, error)
 
 	GetRequest(ctx context.Context, id string) (WithdrawalRequest, error)
@@ -69,6 +72,20 @@ type Reader interface {
 	CountUnread(ctx context.Context, recipientID string) (int, error)
 
 	ListAudit(ctx context.Context, targetID string, limit int) ([]AuditEntry, error)
+
+	// ListBatch returns the entries sharing a batch_id (a split deposit or
+	// allowance), oldest first.
+	ListBatch(ctx context.Context, batchID string) ([]LedgerEntry, error)
+
+	// ListSchedules lists a kid's schedules, or every schedule when kidID is "".
+	ListSchedules(ctx context.Context, kidID string) ([]Schedule, error)
+	GetSchedule(ctx context.Context, id string) (Schedule, error)
+
+	// ListLocks lists a kid's locks that haven't been removed. Callers decide
+	// whether an until date has passed (that needs the household time zone).
+	ListLocks(ctx context.Context, kidID string) ([]JarLock, error)
+	GetLock(ctx context.Context, id string) (JarLock, error)
+	ListLockOverrides(ctx context.Context, kidID string, limit int) ([]LockOverride, error)
 }
 
 // Writer holds every write. There is deliberately no way to update or delete
@@ -89,7 +106,18 @@ type Writer interface {
 	ClearAuthAttempts(ctx context.Context, userID string) error
 
 	CreateJar(ctx context.Context, j Jar) error
+	UpdateJar(ctx context.Context, j Jar) error
 	PutSplitRule(ctx context.Context, r SplitRule) error
+	// ReplaceSplitRules sets a kid's whole split in one go.
+	ReplaceSplitRules(ctx context.Context, kidID string, rules []SplitRule) error
+
+	CreateSchedule(ctx context.Context, sc Schedule) error
+	UpdateSchedule(ctx context.Context, sc Schedule) error
+
+	CreateLock(ctx context.Context, l JarLock) error
+	// RemoveLock reports false when the lock was already removed.
+	RemoveLock(ctx context.Context, id, removedBy string, at time.Time) (bool, error)
+	InsertLockOverride(ctx context.Context, o LockOverride) error
 
 	// InsertLedgerEntry appends an entry. It reports false, with no error,
 	// when the idempotency key was already used.

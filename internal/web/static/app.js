@@ -58,3 +58,60 @@ document.addEventListener("DOMContentLoaded", () => {
     update();
   }
 });
+
+// The gauntlet (plan §5.4): a 10 s countdown with escalating copy, then a
+// 3 s press-and-hold. The server enforces the same 13 s, so skipping this
+// script gains nothing.
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form[data-gauntlet]");
+  if (!form) return;
+  const btn = form.querySelector("button[data-hold]");
+  const fill = btn.querySelector(".hold-fill");
+  const label = btn.querySelector(".hold-label");
+  const count = form.querySelector("[data-count]");
+  const copy = form.querySelector("[data-count-copy]");
+  const lines = [
+    [7, "Are you sure? Take a breath. The button wakes up in a few seconds."],
+    [4, "Past-you set this for a reason."],
+    [1, "Okay, okay. Almost there."],
+  ];
+  let left = 10;
+  btn.disabled = true;
+  label.textContent = "Wait 10…";
+  const tick = setInterval(() => {
+    left -= 1;
+    count.textContent = String(Math.max(left, 0));
+    const line = lines.find(([at]) => left >= at);
+    if (line) copy.textContent = line[1];
+    label.textContent = left > 0 ? `Wait ${left}…` : "Press and hold to break my lock";
+    if (left <= 0) {
+      clearInterval(tick);
+      copy.textContent = "If you really mean it, press and hold for 3 seconds.";
+      btn.disabled = false;
+    }
+  }, 1000);
+
+  const HOLD = 3000;
+  let start = 0, raf = 0;
+  const stop = () => { start = 0; cancelAnimationFrame(raf); fill.style.width = "0"; };
+  const step = (t) => {
+    if (!start) return;
+    const p = Math.min((t - start) / HOLD, 1);
+    fill.style.width = `${p * 100}%`;
+    if (p >= 1) { start = 0; form.requestSubmit(); return; }
+    raf = requestAnimationFrame(step);
+  };
+  const begin = (e) => {
+    if (btn.disabled || start) return;
+    e.preventDefault();
+    start = performance.now();
+    raf = requestAnimationFrame(step);
+  };
+  btn.addEventListener("click", (e) => e.preventDefault()); // a tap is not enough
+  btn.addEventListener("pointerdown", begin);
+  btn.addEventListener("pointerup", stop);
+  btn.addEventListener("pointerleave", stop);
+  btn.addEventListener("pointercancel", stop);
+  btn.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) begin(e); });
+  btn.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") stop(); });
+});

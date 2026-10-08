@@ -11,7 +11,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/chinny/goldberry/internal/config"
 	"github.com/chinny/goldberry/internal/service"
@@ -21,6 +23,11 @@ import (
 const setupToken = "test-setup-token"
 
 func newServer(t *testing.T) *httptest.Server {
+	ts, _ := newServerWithService(t)
+	return ts
+}
+
+func newServerWithService(t *testing.T) (*httptest.Server, *service.Service) {
 	t.Helper()
 	ctx := context.Background()
 	st, err := sqlite.Open(ctx, filepath.Join(t.TempDir(), "gb.db"), nil)
@@ -30,13 +37,14 @@ func newServer(t *testing.T) *httptest.Server {
 	t.Cleanup(func() { st.Close() })
 	log := slog.New(slog.DiscardHandler)
 	cfg := config.Config{InsecureCookies: true, Timezone: "UTC"}
-	srv, err := New(ctx, service.New(st, log), cfg, log, setupToken)
+	svc := service.New(st, log)
+	srv, err := New(ctx, svc, cfg, log, setupToken)
 	if err != nil {
 		t.Fatal(err)
 	}
 	ts := httptest.NewServer(srv)
 	t.Cleanup(ts.Close)
-	return ts
+	return ts, svc
 }
 
 type browser struct {
@@ -296,4 +304,101 @@ func TestKidLockout(t *testing.T) {
 	mom.mustSee("Unlocked.")
 	leo.post("/login", url.Values{"username": {"leo"}, "secret": {"1357"}}, 200)
 	leo.mustSee("Leo")
+}
+
+// TestJarsLocksAllowance covers Phase 4 through HTTP: split deposits, moves,
+// a kid's self-lock and the server-enforced gauntlet, a parent lock, and an
+// allowance posting from the scheduler job.
+func TestJarsLocksAllowance(t *testing.T) {
+	ts, svc := newServerWithService(t)
+	var offset atomic.Int64 // test clock: real time plus a settable offset
+	svc.Now = func() time.Time { return time.Now().Add(time.Duration(offset.Load())) }
+	advance := func(d time.Duration) { offset.Add(int64(d)) }
+
+	mom := newBrowser(t, ts)
+	mom.get("/setup", 200)
+	mom.post("/setup", url.Values{"setup_token": {setupToken}, "household_name": {"H"}, "currency": {"USD"}, "timezone": {"UTC"},
+		"display_name": {"Mom"}, "username": {"mom"}, "password": {"correct horse battery"}}, 200)
+	mom.post("/admin/users", url.Values{"role": {"kid"}, "display_name": {"Ava"}, "username": {"ava"}, "pin": {"2468"}}, 200)
+	kidID := find(t, `/admin/kids/([0-9a-f-]{36})`, mom.url)
+	mom.mustSee("Spend", "Save", "Give", "70 / 20 / 10", "Set one up")
+
+	// Split deposit: one row, three jars.
+	mom.get("/admin/kids/"+kidID+"/funds", 200)
+	mom.mustSee("Use Ava’s split")
+	mom.post("/admin/kids/"+kidID+"/entries", url.Values{"key": {"k1"}, "direction": {"add"}, "jar": {"split"},
+		"amount": {"100.00"}, "comment": {"Birthday"}}, 200)
+	mom.mustSee("Added $100.00 across 3 jars", "$70.00", "$20.00", "$10.00", "3 jars")
+	mom.get("/admin/kids/"+kidID+"/funds", 200)
+	mom.post("/admin/kids/"+kidID+"/entries", url.Values{"key": {"k2"}, "direction": {"remove"}, "jar": {"split"}, "amount": {"1"}}, 422)
+	mom.mustSee("Pick one jar to remove money from.")
+	mom.get("/admin/kids/"+kidID, 200)
+	jarIDs := regexp.MustCompile(`/admin/jars/([0-9a-f-]{36})/locks`).FindAllStringSubmatch(mom.last, -1)
+	spend, save, give := jarIDs[0][1], jarIDs[1][1], jarIDs[2][1]
+
+	// Mom locks Give; Ava can't ask from it.
+	mom.post("/admin/jars/"+give+"/locks", url.Values{"reason": {"Give goes out with a parent"}, "next": {"/admin/kids/" + kidID}}, 200)
+	mom.mustSee("Locked Give", "Your lock")
+
+	ava := newBrowser(t, ts)
+	ava.get("/login", 200)
+	ava.post("/login", url.Values{"username": {"ava"}, "secret": {"2468"}}, 200)
+	ava.mustSee("$70.00", "Locked by a parent", "Lock it")
+	ava.get("/requests/new", 200)
+	ava.post("/requests", url.Values{"key": {"r1"}, "jar": {give}, "amount": {"1"}, "reason": {"x"}}, 422)
+	ava.mustSee("Give is locked by a parent")
+
+	// Ava moves money, then locks Save.
+	ava.get("/move", 200)
+	ava.post("/transfers", url.Values{"key": {"m1"}, "from": {spend}, "to": {save}, "amount": {"30"}}, 200)
+	ava.mustSee("Moved $30.00 from Spend to Save", "$40.00", "$50.00")
+	ava.get("/jars/"+save+"/lock", 200)
+	ava.post("/jars/"+save+"/locks", url.Values{"reason": {"Saving for a Switch"}}, 200)
+	ava.mustSee("Locked Save", "You locked this")
+
+	// Moving out of Save now goes through the gauntlet…
+	ava.get("/move", 200)
+	ava.post("/transfers", url.Values{"key": {"m2"}, "from": {save}, "to": {spend}, "amount": {"10"}}, 200)
+	if !strings.HasPrefix(ava.url, "/gauntlet") {
+		t.Fatalf("not sent to the gauntlet: %s", ava.url)
+	}
+	ava.mustSee("Past-you set this for a reason", "Saving for a Switch", "Press and hold", "data-gauntlet")
+	override := find(t, `name="override" value="([^"]+)"`, ava.last)
+	// …and the server refuses to skip the countdown.
+	ava.post("/transfers", url.Values{"key": {"m2"}, "from": {save}, "to": {spend}, "amount": {"10"}, "override": {override}, "remove_lock": {"0"}}, 200)
+	ava.mustSee("Not so fast: wait for the countdown")
+	override = find(t, `name="override" value="([^"]+)"`, ava.last)
+	advance(14 * time.Second)
+	ava.post("/transfers", url.Values{"key": {"m2"}, "from": {save}, "to": {spend}, "amount": {"10"}, "override": {override}, "remove_lock": {"0"}}, 200)
+	ava.mustSee("Moved $10.00 from Save to Spend", "You locked this")
+
+	mom.get("/notifications", 200)
+	mom.mustSee("Ava broke their own lock on Save", "Saving for a Switch")
+	mom.get("/admin/kids/"+kidID, 200)
+	mom.mustSee("Broken locks", "Broke once")
+
+	// Allowance: set up, then the job pays the next Saturday split 70/20/10.
+	mom.get("/admin/kids/"+kidID+"/allowance", 200)
+	mom.post("/admin/kids/"+kidID+"/allowance", url.Values{"amount": {"10"}, "cadence": {"weekly"}, "weekday": {"6"}, "day_of_month": {"1"}}, 200)
+	mom.mustSee("Allowance saved", "$10.00 every Saturday", "Pause")
+	advance(8 * 24 * time.Hour)
+	if n, err := svc.PostAllowance(context.Background()); err != nil || n != 1 {
+		t.Fatalf("allowance posted %d, %v", n, err)
+	}
+	ava.get("/login", 200) // 8 days later her 12-hour session has expired
+	ava.post("/login", url.Values{"username": {"ava"}, "secret": {"2468"}}, 200)
+	ava.mustSee("Weekly allowance")
+	ava.get("/notifications", 200)
+	ava.mustSee("Allowance: &#43;$10.00")
+
+	// Jars page: the split must make 100%. (Mom's 7-day session lapsed too.)
+	mom.get("/login", 200)
+	mom.post("/login", url.Values{"username": {"mom"}, "secret": {"correct horse battery"}}, 200)
+	mom.get("/admin/kids/"+kidID+"/jars", 200)
+	mom.post("/admin/kids/"+kidID+"/split", url.Values{"split_" + spend: {"50"}, "split_" + save: {"20"}, "split_" + give: {"10"}}, 422)
+	mom.mustSee("make 100%")
+	mom.post("/admin/kids/"+kidID+"/jars", url.Values{"name": {"Lego fund"}}, 200)
+	mom.mustSee("Added Lego fund")
+	mom.get("/admin", 200)
+	mom.mustSee("every Saturday", "Give locked")
 }

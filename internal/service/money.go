@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/chinny/goldberry/internal/money"
@@ -22,8 +23,9 @@ func (e *ErrInsufficient) Error() string {
 }
 
 var (
-	ErrCannotReverse  = errors.New("a reversal can't itself be reversed; post a new entry instead")
-	ErrTooManyPending = errors.New("you already have 5 requests waiting; cancel one or wait for a grown-up")
+	ErrCannotReverse     = errors.New("a reversal can't itself be reversed; post a new entry instead")
+	ErrCannotReverseMove = errors.New("a move between jars can't be undone; move the money back instead")
+	ErrTooManyPending    = errors.New("you already have 5 requests waiting; cancel one or wait for a grown-up")
 )
 
 // ErrAlreadyDecided is returned when a request is no longer pending.
@@ -47,7 +49,8 @@ func (e *ErrAlreadyDecided) Error() string {
 // EntryInput is an admin adding or removing funds (plan §7.1).
 type EntryInput struct {
 	KidID          string
-	JarID          string // "" = the kid's first jar
+	JarID          string // one jar; "" = the kid's first jar (Spend)
+	UseSplit       bool   // deposits only: split across jars by the kid's split rule
 	Amount         int64  // positive; Remove makes it a debit
 	Remove         bool
 	Comment        string // the kid sees this
@@ -55,98 +58,210 @@ type EntryInput struct {
 	IdempotencyKey string
 }
 
-// PostEntry adds or removes funds. A removal that would take available
+// part is one jar's share of a deposit.
+type part struct {
+	Jar    store.JarBalance
+	Amount int64
+}
+
+// splitParts divides amount across a kid's jars by their split rule. Shares
+// are floored and the remainder goes to the first jar (Spend), so the parts
+// always sum to amount (plan §5.2). Jars with a 0% share are left out.
+func splitParts(ctx context.Context, r store.Reader, kidID string, amount int64) ([]part, error) {
+	jars, err := r.JarBalances(ctx, kidID)
+	if err != nil {
+		return nil, err
+	}
+	rules, err := r.ListSplitRules(ctx, kidID)
+	if err != nil {
+		return nil, err
+	}
+	bps := map[string]int{}
+	for _, rule := range rules {
+		bps[rule.JarID] = rule.BasisPoints
+	}
+	weights := make([]int, len(jars))
+	total := 0
+	for i, j := range jars {
+		weights[i] = bps[j.ID]
+		total += weights[i]
+	}
+	if len(jars) == 0 {
+		return nil, errors.New("kid has no jars")
+	}
+	if total != 10000 { // no usable rule: everything to the first jar
+		weights = make([]int, len(jars))
+		weights[0] = 10000
+	}
+	shares, err := money.Split(amount, weights)
+	if err != nil {
+		return nil, err
+	}
+	var out []part
+	for i, j := range jars {
+		if shares[i] != 0 {
+			out = append(out, part{Jar: j, Amount: shares[i]})
+		}
+	}
+	return out, nil
+}
+
+// PostEntry adds or removes funds and returns the posted entries (several for
+// a split deposit, sharing a batch_id). A removal that would take available
 // below zero is refused unless the household allows negative balances.
-// Reusing an idempotency key returns the original entry and posts nothing.
-func (s *Service) PostEntry(ctx context.Context, actor store.User, in EntryInput) (store.LedgerEntry, error) {
+// Reusing an idempotency key returns the original entries and posts nothing.
+func (s *Service) PostEntry(ctx context.Context, actor store.User, in EntryInput) ([]store.LedgerEntry, error) {
 	if err := requireAdmin(actor); err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
 	if in.Amount <= 0 {
-		return store.LedgerEntry{}, invalid("amount", "Enter an amount above zero.")
+		return nil, invalid("amount", "Enter an amount above zero.")
 	}
 	if in.Amount > money.MaxAmount {
-		return store.LedgerEntry{}, invalid("amount", "%s", money.ErrTooLarge.Error())
+		return nil, invalid("amount", "%s", money.ErrTooLarge.Error())
+	}
+	if in.UseSplit && in.Remove {
+		return nil, invalid("jar", "Pick one jar to remove money from.")
 	}
 	comment, err := cleanText("comment", in.Comment, false)
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
 	note, err := cleanText("private_note", in.PrivateNote, false)
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
 	h, cur, err := s.Household(ctx)
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
 	kid, err := getKid(ctx, s.Store, in.KidID)
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
 
-	var out store.LedgerEntry
+	var out []store.LedgerEntry
 	err = s.Store.Tx(ctx, kid.ID, func(tx store.Tx) error {
 		if in.IdempotencyKey != "" {
-			if prev, err := tx.GetLedgerEntryByKey(ctx, in.IdempotencyKey); err == nil {
-				if prev.KidID != kid.ID {
+			prev, err := priorEntries(ctx, tx, in.IdempotencyKey)
+			if err != nil {
+				return err
+			}
+			if len(prev) > 0 {
+				if prev[0].KidID != kid.ID {
 					return ErrForbidden
 				}
 				out = prev
 				return nil
-			} else if !errors.Is(err, store.ErrNotFound) {
-				return err
 			}
 		}
-		jar, err := jarFor(ctx, tx, kid.ID, in.JarID)
-		if err != nil {
-			return err
+		var parts []part
+		if in.UseSplit {
+			if parts, err = splitParts(ctx, tx, kid.ID, in.Amount); err != nil {
+				return err
+			}
+		} else {
+			jar, err := jarFor(ctx, tx, kid.ID, in.JarID)
+			if err != nil {
+				return err
+			}
+			parts = []part{{Jar: jar, Amount: in.Amount}}
 		}
 		now := s.now()
-		e := store.LedgerEntry{
-			ID: store.NewID(), KidID: kid.ID, JarID: jar.ID, Amount: in.Amount, Kind: store.KindDeposit,
-			Comment: comment, PrivateNote: note, ActorID: actor.ID, IdempotencyKey: in.IdempotencyKey,
-			EffectiveAt: now, CreatedAt: now,
-		}
 		kind := notify.FundsAdded
 		if in.Remove {
+			jar := parts[0].Jar
 			if !h.AllowNegative && jar.Available()-in.Amount < 0 {
 				return &ErrInsufficient{Available: jar.Available(), Jar: jar.Name, Currency: cur}
 			}
-			e.Amount, e.Kind, kind = -in.Amount, store.KindWithdrawal, notify.FundsRemoved
+			kind = notify.FundsRemoved
 		}
-		if _, err := tx.InsertLedgerEntry(ctx, e); err != nil {
-			return err
+		batch := ""
+		if len(parts) > 1 {
+			batch = store.NewID()
 		}
-		out = e
-		out.JarName, out.ActorName = jar.Name, actor.DisplayName
+		for _, p := range parts {
+			e := store.LedgerEntry{
+				ID: store.NewID(), KidID: kid.ID, JarID: p.Jar.ID, Amount: p.Amount, Kind: store.KindDeposit,
+				Comment: comment, PrivateNote: note, ActorID: actor.ID, BatchID: batch,
+				IdempotencyKey: partKey(in.IdempotencyKey, p.Jar.ID, len(parts) > 1),
+				EffectiveAt:    now, CreatedAt: now, JarName: p.Jar.Name, ActorName: actor.DisplayName,
+			}
+			if in.Remove {
+				e.Amount, e.Kind = -p.Amount, store.KindWithdrawal
+			}
+			if _, err := tx.InsertLedgerEntry(ctx, e); err != nil {
+				return err
+			}
+			out = append(out, e)
+		}
 		return notify.Send(ctx, tx, now, []string{kid.ID}, kind, "", notify.Payload{
-			KidID: kid.ID, KidName: kid.DisplayName, ActorName: actor.DisplayName, Amount: in.Amount, Jar: jar.Name, Text: comment,
+			KidID: kid.ID, KidName: kid.DisplayName, ActorName: actor.DisplayName, Amount: in.Amount,
+			Jar: jarLabel(parts), Text: comment,
 		})
 	})
 	return out, err
 }
 
-// Reverse posts a reversal that cancels entryID (plan §5.1). Reversing an
-// already-reversed entry is a no-op that returns the existing reversal.
-func (s *Service) Reverse(ctx context.Context, actor store.User, entryID string) (store.LedgerEntry, error) {
-	if err := requireAdmin(actor); err != nil {
-		return store.LedgerEntry{}, err
+// partKey derives each split part's idempotency key from the form's key.
+func partKey(key, jarID string, split bool) string {
+	if key == "" || !split {
+		return key
 	}
-	orig, err := s.Store.GetLedgerEntry(ctx, entryID)
+	return key + ":" + jarID
+}
+
+// priorEntries finds entries already posted under a form key: the entry
+// itself, or the batch a split deposit made with keys "<key>:<jar>".
+func priorEntries(ctx context.Context, r store.Reader, key string) ([]store.LedgerEntry, error) {
+	if e, err := r.GetLedgerEntryByKey(ctx, key); err == nil {
+		return []store.LedgerEntry{e}, nil
+	} else if !errors.Is(err, store.ErrNotFound) {
+		return nil, err
+	}
+	e, err := r.GetLedgerEntryByKeyPrefix(ctx, key+":")
+	if errors.Is(err, store.ErrNotFound) {
+		return nil, nil
+	}
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
+	}
+	if e.BatchID == "" {
+		return []store.LedgerEntry{e}, nil
+	}
+	return r.ListBatch(ctx, e.BatchID)
+}
+
+// jarLabel names where a posting went: "Spend", or "3 jars".
+func jarLabel(parts []part) string {
+	if len(parts) == 1 {
+		return parts[0].Jar.Name
+	}
+	return fmt.Sprintf("%d jars", len(parts))
+}
+
+// Reverse posts reversals that cancel entryID (plan §5.1). An entry that is
+// part of a batch (a split deposit or an allowance) is reversed together with
+// the rest of its batch. Reversing again is a no-op that returns the existing
+// reversals.
+func (s *Service) Reverse(ctx context.Context, actor store.User, entryID string) ([]store.LedgerEntry, error) {
+	if err := requireAdmin(actor); err != nil {
+		return nil, err
+	}
+	first, err := s.Store.GetLedgerEntry(ctx, entryID)
+	if err != nil {
+		return nil, err
 	}
 	h, cur, err := s.Household(ctx)
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
-	kid, err := getKid(ctx, s.Store, orig.KidID)
+	kid, err := getKid(ctx, s.Store, first.KidID)
 	if err != nil {
-		return store.LedgerEntry{}, err
+		return nil, err
 	}
-	var out store.LedgerEntry
-	err = s.Store.Tx(ctx, orig.KidID, func(tx store.Tx) error {
+	var out []store.LedgerEntry
+	err = s.Store.Tx(ctx, first.KidID, func(tx store.Tx) error {
 		orig, err := tx.GetLedgerEntry(ctx, entryID)
 		if err != nil {
 			return err
@@ -154,31 +269,55 @@ func (s *Service) Reverse(ctx context.Context, actor store.User, entryID string)
 		if orig.Kind == store.KindReversal {
 			return ErrCannotReverse
 		}
-		if orig.Reversed() {
-			out, err = tx.GetLedgerEntry(ctx, orig.ReversedByID)
-			return err
+		if orig.TransferID != "" {
+			return ErrCannotReverseMove
 		}
-		if orig.Amount > 0 && !h.AllowNegative {
-			jar, err := jarFor(ctx, tx, orig.KidID, orig.JarID)
-			if err != nil {
+		group := []store.LedgerEntry{orig}
+		if orig.BatchID != "" {
+			if group, err = tx.ListBatch(ctx, orig.BatchID); err != nil {
 				return err
-			}
-			if jar.Available()-orig.Amount < 0 {
-				return &ErrInsufficient{Available: jar.Available(), Jar: jar.Name, Currency: cur}
 			}
 		}
 		now := s.now()
-		e := store.LedgerEntry{
-			ID: store.NewID(), KidID: orig.KidID, JarID: orig.JarID, Amount: -orig.Amount, Kind: store.KindReversal,
-			Comment: orig.Comment, ActorID: actor.ID, ReversesID: orig.ID, IdempotencyKey: "reverse:" + orig.ID,
-			EffectiveAt: now, CreatedAt: now,
+		var total int64
+		for _, e := range group {
+			if e.Reversed() {
+				prev, err := tx.GetLedgerEntry(ctx, e.ReversedByID)
+				if err != nil {
+					return err
+				}
+				out = append(out, prev)
+				continue
+			}
+			if e.Amount > 0 && !h.AllowNegative {
+				jar, err := jarFor(ctx, tx, e.KidID, e.JarID)
+				if err != nil {
+					return err
+				}
+				if jar.Available()-e.Amount < 0 {
+					return &ErrInsufficient{Available: jar.Available(), Jar: jar.Name, Currency: cur}
+				}
+			}
+			r := store.LedgerEntry{
+				ID: store.NewID(), KidID: e.KidID, JarID: e.JarID, Amount: -e.Amount, Kind: store.KindReversal,
+				Comment: e.Comment, ActorID: actor.ID, ReversesID: e.ID, IdempotencyKey: "reverse:" + e.ID,
+				EffectiveAt: now, CreatedAt: now, JarName: e.JarName,
+			}
+			if _, err := tx.InsertLedgerEntry(ctx, r); err != nil {
+				return err
+			}
+			out = append(out, r)
+			total += e.Amount
 		}
-		if _, err := tx.InsertLedgerEntry(ctx, e); err != nil {
-			return err
+		if total == 0 {
+			return nil // everything was already reversed
 		}
-		out = e
+		jar := orig.JarName
+		if len(group) > 1 {
+			jar = fmt.Sprintf("%d jars", len(group))
+		}
 		return notify.Send(ctx, tx, now, []string{orig.KidID}, notify.EntryReversed, "", notify.Payload{
-			KidID: kid.ID, KidName: kid.DisplayName, ActorName: actor.DisplayName, Amount: orig.Amount, Jar: orig.JarName, Text: orig.Comment,
+			KidID: kid.ID, KidName: kid.DisplayName, ActorName: actor.DisplayName, Amount: total, Jar: jar, Text: orig.Comment,
 		})
 	})
 	return out, err
@@ -190,6 +329,8 @@ type RequestInput struct {
 	Amount         int64
 	Reason         string
 	IdempotencyKey string
+	Override       string // gauntlet token, for a self-locked jar
+	RemoveLock     bool   // with Override: remove the lock rather than break it once
 }
 
 // CreateRequest places a hold for a withdrawal request. In one transaction it
@@ -206,6 +347,10 @@ func (s *Service) CreateRequest(ctx context.Context, kid store.User, in RequestI
 		return store.WithdrawalRequest{}, err
 	}
 	h, cur, err := s.Household(ctx)
+	if err != nil {
+		return store.WithdrawalRequest{}, err
+	}
+	key, err := s.overrideKey(ctx)
 	if err != nil {
 		return store.WithdrawalRequest{}, err
 	}
@@ -231,6 +376,10 @@ func (s *Service) CreateRequest(ctx context.Context, kid store.User, in RequestI
 		if err != nil {
 			return err
 		}
+		overridden, err := s.checkLocks(ctx, tx, kid, kid.ID, jar.ID, "", in.Override, key)
+		if err != nil {
+			return err
+		}
 		if in.Amount > jar.Available() {
 			return &ErrInsufficient{Available: jar.Available(), Jar: jar.Name, Currency: cur}
 		}
@@ -248,6 +397,15 @@ func (s *Service) CreateRequest(ctx context.Context, kid store.User, in RequestI
 			return err
 		}
 		out = r
+		if len(overridden) > 0 {
+			action := "once"
+			if in.RemoveLock {
+				action = "removed"
+			}
+			if err := s.recordOverride(ctx, tx, kid, overridden, action, r.Amount, "", r.ID); err != nil {
+				return err
+			}
+		}
 		admins, err := notify.Admins(ctx, tx)
 		if err != nil {
 			return err

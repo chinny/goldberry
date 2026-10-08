@@ -1,0 +1,24 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+<form method="post" action="/jars/{{.D.Jar.ID}}/locks" class="stack-lg">
+  {{template "csrf" .}}
+  <p>Locking {{.D.Jar.Name}} makes future-you stop and think before moving money out. You can still break it, but it takes a minute.</p>
+  <div class="field">
+    <label for="reason">Why? <span class="hint">You’ll see this if you try to break it</span></label>
+    <input id="reason" name="reason" value="{{.Val "reason"}}" maxlength="140" required placeholder="Saving for a Switch" autofocus>
+  </div>
+  <div class="field">
+    <label for="to">Lock what?</label>
+    <select id="to" name="to">
+      <option value="">Everything out of {{.D.Jar.Name}}, and asking for it</option>
+      {{range .D.Jars}}{{if ne .ID $v.D.Jar.ID}}<option value="{{.ID}}"{{if $v.Checked "to" .ID}} selected{{end}}>Only moving it to {{.Name}}</option>{{end}}{{end}}
+    </select>
+  </div>
+  <div class="field">
+    <label for="until">Until <span class="hint">optional; leave empty to keep it until you remove it</span></label>
+    <input id="until" name="until" type="date" value="{{.Val "until"}}">
+  </div>
+  <button class="btn btn-kid btn-block" type="submit">{{template "i-lock"}} Lock {{.D.Jar.Name}}</button>
+</form>
+{{end}}

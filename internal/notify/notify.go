@@ -26,6 +26,8 @@ const (
 	EntryReversed    = "entry_reversed"    // → kid
 	SignInFailures   = "signin_failures"   // → admins
 	KidLocked        = "kid_locked"        // → admins
+	AllowancePosted  = "allowance_posted"  // → kid
+	LockOverridden   = "lock_overridden"   // → admins
 )
 
 // Payload is the JSON stored with a notification. Only what the message needs.
@@ -115,6 +117,18 @@ func Render(n store.Notification, cur money.Currency) Message {
 		return Message{fmt.Sprintf("Wrong PIN or password for %s", p.KidName), fmt.Sprintf("%d failed tries in a row. Sign-in is slowing down.", p.Failures)}
 	case KidLocked:
 		return Message{fmt.Sprintf("%s’s account is locked", p.KidName), fmt.Sprintf("%d wrong PINs. Unlock it from People.", p.Failures)}
+	case AllowancePosted:
+		return Message{fmt.Sprintf("Allowance: %s", cur.Signed(p.Amount)), withComment(p.Jar, p.Text)}
+	case LockOverridden:
+		what := fmt.Sprintf("%s broke their own lock on %s", p.KidName, p.Jar)
+		if p.Note == "removed" {
+			what = fmt.Sprintf("%s removed their own lock on %s", p.KidName, p.Jar)
+		}
+		body := "Reason they gave: “" + p.Text + "”"
+		if p.Amount > 0 {
+			body = "To move or ask for " + amt + " · " + body
+		}
+		return Message{what, body}
 	default:
 		return Message{n.Kind, ""}
 	}

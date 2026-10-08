@@ -19,16 +19,19 @@ Open `http://<host>:8080/setup`, paste the setup token, and create the first par
 
 ## What works today (v0.x)
 
-Phases 0–2 of the [design plan](docs/design/plan.md#14-phasing):
+Phases 0–2 and 4 of the [design plan](docs/design/plan.md#14-phasing) (email, Phase 3, is parked):
 
 - **First-run setup** guarded by a one-time token printed to the container log.
 - **Accounts:** parents sign in with a password, kids with a 4–6 digit PIN on a big PIN pad. Throttling is per account; kids hard-lock after 10 wrong PINs and only a parent can unlock them. Parents can reset PINs, sign a kid out of every device, and disable accounts.
 - **Money:** an append-only ledger in integer cents. Add or remove funds with a comment the kid sees and a private note they don't. Undo is a visible reversal, never an edit. Balances can't go below zero unless you allow it.
 - **Requests:** a kid asks for money from what's available; the amount is held until a parent approves (optionally a lower amount, with a note), denies, the kid cancels, or it expires (14 days by default).
 - **Notifications:** an in-app bell for both parents and kids, with Approve/Deny inline. The first parent to decide wins; the other sees "Approved by Mom".
+- **Jars:** every kid has Spend, Save and Give, split 70/20/10 (leftover cents go to Spend). Parents can rename, add and archive jars and change the split; deposits can use the split or go to one jar. Kids move money between their own jars.
+- **Jar locks:** a parent's lock is hard. A kid can lock their own jar ("Saving for a Switch") and break it only through the gauntlet: a loud warning, a 10-second countdown and a 3-second press-and-hold, enforced by the server ([ADR 0011](docs/adr/0011-server-enforced-gauntlet.md)). Parents are told when a lock is broken.
+- **Recurring allowance:** weekly, every two weeks or monthly, into the split or one jar. It pays itself on the household's calendar, catches up after downtime (up to 8 payments), never double-pays, and can be paused.
 - Light and dark themes, phone-first, works without JavaScript, no CDN (works offline on a LAN).
 
-Coming next, per the plan: email via SMTP (Phase 3), Spend/Save/Give jars and recurring allowance (Phase 4), goals and parent-paid interest (Phase 5), Helm chart, backups and v1.0 (Phase 6).
+Coming next, per the plan: goals and parent-paid interest (Phase 5), email via SMTP (Phase 3), Helm chart, backups and v1.0 (Phase 6).
 
 ## Configuration
 
