@@ -135,7 +135,7 @@ func (s *Service) CreateAdmin(ctx context.Context, actor store.User, in AdminInp
 // KidInput adds a kid.
 type KidInput struct{ Username, DisplayName, PIN string }
 
-// CreateKid adds a kid with one Spend jar that takes 100% of deposits.
+// CreateKid adds a kid with Spend/Save/Give jars split 70/20/10.
 func (s *Service) CreateKid(ctx context.Context, actor store.User, in KidInput) (store.User, error) {
 	if err := requireAdmin(actor); err != nil {
 		return store.User{}, err
@@ -160,16 +160,18 @@ func (s *Service) CreateKid(ctx context.Context, actor store.User, in KidInput) 
 		return store.User{}, err
 	}
 	kid := store.User{ID: store.NewID(), Role: store.RoleKid, Username: username, DisplayName: dn, PINHash: hash, CreatedAt: s.now()}
-	jar := store.Jar{ID: store.NewID(), KidID: kid.ID, Name: "Spend", Kind: store.JarSpend}
 	err = s.Store.Tx(ctx, "", func(tx store.Tx) error {
 		if err := tx.CreateUser(ctx, kid); err != nil {
 			return usernameTaken(err)
 		}
-		if err := tx.CreateJar(ctx, jar); err != nil {
-			return err
-		}
-		if err := tx.PutSplitRule(ctx, store.SplitRule{KidID: kid.ID, JarID: jar.ID, BasisPoints: 10000}); err != nil {
-			return err
+		for i, d := range DefaultJars {
+			jar := store.Jar{ID: store.NewID(), KidID: kid.ID, Name: d.Name, Kind: d.Kind, SortOrder: i}
+			if err := tx.CreateJar(ctx, jar); err != nil {
+				return err
+			}
+			if err := tx.PutSplitRule(ctx, store.SplitRule{KidID: kid.ID, JarID: jar.ID, BasisPoints: d.BPS}); err != nil {
+				return err
+			}
 		}
 		return s.audit(ctx, tx, actor.ID, "user.create", kid.ID, map[string]any{"role": "kid", "username": kid.Username})
 	})

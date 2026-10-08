@@ -30,15 +30,17 @@
     <a class="card card-link stack" href="/admin/kids/{{.Kid.ID}}">
       <div class="row">
         <div class="avatar tone-{{$v.Tone .Kid}}" aria-hidden="true">{{.Kid.Initial}}</div>
-        <div class="grow"><strong>{{.Kid.DisplayName}}</strong><div class="caption">@{{.Kid.Username}}</div></div>
+        <div class="grow"><strong>{{.Kid.DisplayName}}</strong><div class="caption">@{{.Kid.Username}}{{range .Jars}}{{if .Locked}} · {{.Name}} locked{{end}}{{end}}</div></div>
         <div class="kid-total">
           <span class="money-m">{{$v.Money .Total}}</span>
           {{if .Held}}<span class="small held-ink">{{$v.Money .Held}} held</span>{{end}}
         </div>
       </div>
       {{if gt (len .Jars) 1}}
+      {{template "split-bar" .}}
       <div class="jar-chips">{{range .Jars}}<div class="{{jarClass .Kind}}"><strong>{{.Name}}</strong><div class="num">{{$v.Money .Balance}}</div></div>{{end}}</div>
       {{end}}
+      {{range .Schedules}}{{if .Active}}<div class="caption">{{$v.Money .Amount}} {{.Describe}} · next {{$v.Date (derefTimePtr .NextTime)}}</div>{{end}}{{end}}
     </a>
     {{else}}
     <div class="card empty-state stack">

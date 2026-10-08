@@ -1,0 +1,38 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+<form method="post" action="{{.D.Action}}" class="stack-lg">
+  {{template "csrf" .}}
+  <input type="hidden" name="key" value="{{.NewKey}}">
+  <fieldset class="field">
+    <legend class="label">From</legend>
+    <div class="jar-pick">
+      {{range .D.Jars}}
+      <label class="pick pick-{{jarClass .Kind}}{{if .ParentLock}}{{if $v.IsKid}} pick-hard{{end}}{{else if .SelfLock}} pick-soft{{end}}">
+        <input type="radio" name="from" value="{{.ID}}"{{if $v.Checked "from" .ID}} checked{{end}}>
+        <strong>{{.Name}}</strong>
+        <span class="small">{{$v.Money .Available}}{{if .Locked}} · {{if .ParentLock}}parent lock{{else}}self-lock{{end}}{{end}}</span>
+      </label>
+      {{end}}
+    </div>
+  </fieldset>
+  <fieldset class="field">
+    <legend class="label">To</legend>
+    <div class="jar-pick">
+      {{range .D.Jars}}
+      <label class="pick pick-{{jarClass .Kind}}">
+        <input type="radio" name="to" value="{{.ID}}"{{if $v.Checked "to" .ID}} checked{{end}}>
+        <strong>{{.Name}}</strong>
+        <span class="small">{{$v.Money .Balance}}</span>
+      </label>
+      {{end}}
+    </div>
+  </fieldset>
+  <div class="field">
+    <label for="amount">How much?</label>
+    <div class="amount-input"><span>{{.Symbol}}</span><input id="amount" name="amount" inputmode="decimal" value="{{.Val "amount"}}" placeholder="0.00" autocomplete="off" required></div>
+  </div>
+  {{if .IsKid}}<p class="caption">A jar you locked asks you to think twice. A parent’s lock can’t be moved past.</p>{{end}}
+  <button class="btn {{if .IsKid}}btn-kid{{else}}btn-primary{{end}} btn-block" type="submit">Move money</button>
+</form>
+{{end}}

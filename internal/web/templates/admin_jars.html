@@ -1,0 +1,45 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}{{$kid := .D.Kid}}
+<form method="post" action="/admin/kids/{{$kid.ID}}/split" class="card stack">
+  {{template "csrf" .}}
+  <h2>Split</h2>
+  <p class="caption">How deposits and allowance divide between jars. Leftover cents go to {{(index .D.Jars 0).Name}}.</p>
+  {{template "split-bar" .D}}
+  {{range .D.Jars}}
+  <div class="row">
+    <label class="grow" for="split_{{.ID}}">{{.Name}}</label>
+    <input class="pct-input" id="split_{{.ID}}" name="split_{{.ID}}" inputmode="decimal" value="{{$v.Val (printf "split_%s" .ID)}}"> <span>%</span>
+  </div>
+  {{end}}
+  <button class="btn btn-primary" type="submit">Save split</button>
+</form>
+
+<section class="card stack">
+  <h2>Jars</h2>
+  <ul class="list list-flat">
+    {{range .D.Jars}}
+    <li>
+      <form method="post" action="/admin/kids/{{$kid.ID}}/jars/rename" class="row grow">
+        {{template "csrf" $v}}<input type="hidden" name="jar" value="{{.ID}}">
+        <label class="visually-hidden" for="name-{{.ID}}">Name</label>
+        <input id="name-{{.ID}}" name="name" value="{{.Name}}" maxlength="24">
+        <button class="btn btn-outline btn-sm" type="submit">Rename</button>
+      </form>
+      <span class="amt">{{$v.Money .Balance}}</span>
+      <form method="post" action="/admin/kids/{{$kid.ID}}/jars/archive">
+        {{template "csrf" $v}}<input type="hidden" name="jar" value="{{.ID}}">
+        <button class="link" type="submit">Archive</button>
+      </form>
+    </li>
+    {{end}}
+  </ul>
+  <form method="post" action="/admin/kids/{{$kid.ID}}/jars" class="row">
+    {{template "csrf" .}}
+    <label class="visually-hidden" for="new-jar">New jar name</label>
+    <input id="new-jar" name="name" maxlength="24" placeholder="New jar, e.g. Lego fund" required>
+    <button class="btn btn-primary btn-sm" type="submit">Add jar</button>
+  </form>
+  <p class="caption">A jar can be archived once it’s empty and has a 0% share. Its history stays.</p>
+</section>
+{{end}}

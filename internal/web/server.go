@@ -358,6 +358,12 @@ func safeNext(next, def string) string {
 	return next
 }
 
+// redirectTo sends the browser to a same-site path built from request data
+// (like a kid ID from the URL); anything else goes to "/".
+func (s *Server) redirectTo(w http.ResponseWriter, r *http.Request, path string) {
+	http.Redirect(w, r, safeNext(path, "/"), http.StatusSeeOther) //nolint:gosec // safeNext allows same-site paths only
+}
+
 // back redirects to the form's "next" field (or def) with a flash message.
 func (s *Server) back(w http.ResponseWriter, r *http.Request, def, kind, msg string) {
 	if msg != "" {
@@ -372,10 +378,15 @@ func userMessage(err error) string {
 	var ins *service.ErrInsufficient
 	var done *service.ErrAlreadyDecided
 	var th *service.ThrottledError
+	var locked *service.ErrJarLocked
+	var needs *service.ErrNeedsOverride
 	switch {
-	case errors.As(err, &ue), errors.As(err, &ins), errors.As(err, &done), errors.As(err, &th):
+	case errors.As(err, &ue), errors.As(err, &ins), errors.As(err, &done), errors.As(err, &th),
+		errors.As(err, &locked), errors.As(err, &needs):
 		return err.Error()
 	case errors.Is(err, service.ErrTooManyPending), errors.Is(err, service.ErrCannotReverse),
+		errors.Is(err, service.ErrCannotReverseMove), errors.Is(err, service.ErrOverrideTooSoon),
+		errors.Is(err, service.ErrOverrideInvalid),
 		errors.Is(err, service.ErrBadCredentials), errors.Is(err, service.ErrLocked), errors.Is(err, service.ErrForbidden):
 		msg := err.Error()
 		return strings.ToUpper(msg[:1]) + msg[1:] + "."

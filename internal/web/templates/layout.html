@@ -11,8 +11,8 @@
 <script src="/static/app.js"></script>
 <script src="/static/vendor/htmx-2.0.11.min.js" defer></script>
 </head>
-<body hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'>
-{{if .User}}
+<body{{if .Bare}} class="bare-page"{{end}} hx-headers='{"X-CSRF-Token": "{{.CSRF}}"}'>
+{{if and .User (not .Bare)}}
 <div class="shell">
   <aside class="sidebar" aria-label="Sidebar">
     <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>goldberry</a>
@@ -28,6 +28,7 @@
         <a class="nav" href="/"{{if eq .Nav "home"}} aria-current="page"{{end}}>{{template "i-home"}}Home</a>
         <a class="nav" href="/ledger"{{if eq .Nav "activity"}} aria-current="page"{{end}}>{{template "i-list"}}Activity</a>
         <a class="nav" href="/requests/new"{{if eq .Nav "ask"}} aria-current="page"{{end}}>{{template "i-plus"}}Ask for money</a>
+        <a class="nav" href="/move"{{if eq .Nav "move"}} aria-current="page"{{end}}>{{template "i-move"}}Move between jars</a>
       {{end}}
     </nav>
     <div class="foot">

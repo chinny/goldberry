@@ -1,0 +1,49 @@
+{{define "main"}}
+{{$v := .}}{{$d := .D}}{{$lock := index .D.Locks 0}}
+<div class="gauntlet">
+  <form method="post" action="{{.D.Action}}" class="gauntlet-inner" data-gauntlet>
+    {{template "csrf" .}}
+    <input type="hidden" name="override" value="{{.D.Token}}">
+    <input type="hidden" name="key" value="{{.D.Key}}">
+    {{if eq .D.Then "request"}}
+      <input type="hidden" name="jar" value="{{.D.Jar.ID}}"><input type="hidden" name="amount" value="{{.D.AmountIn}}"><input type="hidden" name="reason" value="{{.D.Reason}}">
+    {{else if eq .D.Then "transfer"}}
+      <input type="hidden" name="from" value="{{.D.Jar.ID}}"><input type="hidden" name="to" value="{{.D.To.ID}}"><input type="hidden" name="amount" value="{{.D.AmountIn}}">
+    {{else}}
+      <input type="hidden" name="jar" value="{{.D.Jar.ID}}">
+    {{end}}
+    <div class="hazard" aria-hidden="true"></div>
+    <div class="row gauntlet-head">
+      <div class="gauntlet-icon">{{template "i-lock-lg"}}</div>
+      <h1>Past-you set this for a reason</h1>
+    </div>
+    {{template "flash" .}}
+    <div class="gauntlet-quote">
+      <p>You locked {{.D.Jar.Name}} on {{$v.Date (derefTimePtr $lock.CreatedAt)}}{{if $lock.UntilDate}} until {{$lock.UntilDate}}{{end}}:</p>
+      <p class="quote">“{{$lock.Reason}}”</p>
+    </div>
+    <div class="gauntlet-cost">
+      {{if eq .D.Then "remove"}}
+      <strong>Removing the lock means all {{$v.Money .D.Jar.Available}} in {{.D.Jar.Name}} can be moved or asked for.</strong>
+      {{else}}
+      <strong>{{if eq .D.Then "transfer"}}Moving{{else}}Asking for{{end}} {{$v.Money .D.Amount}} out of {{.D.Jar.Name}} means:</strong>
+      <p class="spread"><span>{{.D.Jar.Name}}</span><span><s>{{$v.Money .D.Jar.Available}}</s> → <b class="cost">{{$v.Money .D.After}}</b></span></p>
+      {{end}}
+    </div>
+    <div class="row countdown">
+      <div class="count-ring" aria-hidden="true"><span data-count>10</span></div>
+      <p data-count-copy aria-live="polite">Are you sure? Take a breath. The button wakes up in a few seconds.</p>
+    </div>
+    {{if ne .D.Then "remove"}}
+    <fieldset class="field">
+      <legend class="label">If I go ahead…</legend>
+      <label class="gauntlet-choice"><input type="radio" name="remove_lock" value="0" checked> Just this once — keep the lock</label>
+      <label class="gauntlet-choice"><input type="radio" name="remove_lock" value="1"> Remove the lock</label>
+    </fieldset>
+    {{end}}
+    <a class="btn btn-block gauntlet-keep" href="/">Keep my lock</a>
+    <button class="btn btn-block gauntlet-break" type="submit" data-hold><span class="hold-fill" aria-hidden="true"></span><span class="hold-label">Press and hold to break my lock</span></button>
+    <p class="gauntlet-foot">Hold for 3 seconds. Your parents can see when a lock is broken.</p>
+  </form>
+</div>
+{{end}}

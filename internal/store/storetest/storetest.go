@@ -72,12 +72,15 @@ func must(t *testing.T, err error) {
 	}
 }
 
-// Deposit adds funds to a kid's first jar.
+// Deposit adds funds to a kid's first jar (Spend).
 func (f *Fixture) Deposit(t *testing.T, kid store.User, amount int64) store.LedgerEntry {
 	t.Helper()
 	e, err := f.Svc.PostEntry(context.Background(), f.Mom, service.EntryInput{KidID: kid.ID, Amount: amount, Comment: "chores"})
 	must(t, err)
-	return e
+	if len(e) != 1 {
+		t.Fatalf("deposit posted %d entries", len(e))
+	}
+	return e[0]
 }
 
 // Jar returns a kid's first jar with balances.
@@ -124,7 +127,7 @@ func Run(t *testing.T, open Opener) {
 		{"Notifications", testNotifications},
 		{"Timestamps", testTimestamps},
 	}
-	for _, tc := range tests {
+	for _, tc := range append(tests, jarTests...) {
 		t.Run(tc.name, func(t *testing.T) { tc.fn(t, open) })
 	}
 }
@@ -182,8 +185,8 @@ func testIdempotency(t *testing.T, open Opener) {
 	must(t, err)
 	b, err := f.Svc.PostEntry(ctx, f.Mom, in)
 	must(t, err)
-	if a.ID != b.ID {
-		t.Fatalf("double submit made two entries: %s %s", a.ID, b.ID)
+	if a[0].ID != b[0].ID {
+		t.Fatalf("double submit made two entries: %s %s", a[0].ID, b[0].ID)
 	}
 	f.wantJar(t, f.Ava, 500, 0)
 	// The same key can't be replayed against another kid.
@@ -221,14 +224,15 @@ func testReversal(t *testing.T, open Opener) {
 	f := NewFixture(t, open)
 	e := f.Deposit(t, f.Ava, 5000)
 	f.Deposit(t, f.Ava, 200)
-	r1, err := f.Svc.Reverse(ctx, f.Dad, e.ID)
+	rs1, err := f.Svc.Reverse(ctx, f.Dad, e.ID)
 	must(t, err)
+	r1 := rs1[0]
 	if r1.Amount != -5000 || r1.Kind != store.KindReversal || r1.ReversesID != e.ID {
 		t.Fatalf("reversal %+v", r1)
 	}
-	r2, err := f.Svc.Reverse(ctx, f.Dad, e.ID)
+	rs2, err := f.Svc.Reverse(ctx, f.Dad, e.ID)
 	must(t, err)
-	if r2.ID != r1.ID {
+	if len(rs2) != 1 || rs2[0].ID != r1.ID {
 		t.Fatal("second reverse posted another entry")
 	}
 	f.wantJar(t, f.Ava, 200, 0)

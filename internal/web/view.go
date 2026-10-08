@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ type view struct {
 	Title     string
 	Eyebrow   string
 	Back      string // back-arrow target, if any
+	Bare      bool   // full-screen page without the app shell (the gauntlet)
 	Nav       string // active nav item
 	FlashKind string
 	Flash     string
@@ -46,8 +48,9 @@ var funcs = template.FuncMap{
 		}
 		return s
 	},
-	"lower": strings.ToLower,
-	"deref": func(r *store.WithdrawalRequest) store.WithdrawalRequest { return *r },
+	"lower":        strings.ToLower,
+	"derefTimePtr": func(t time.Time) *time.Time { return &t },
+	"deref":        func(r *store.WithdrawalRequest) store.WithdrawalRequest { return *r },
 	"derefTime": func(t *time.Time) time.Time {
 		if t == nil {
 			return time.Time{}
@@ -61,6 +64,8 @@ var funcs = template.FuncMap{
 		return p.KidID
 	},
 	"initial": func(name string) string { return store.User{DisplayName: name}.Initial() },
+	"rows":    groupLedger,
+	"pct":     func(bps int) string { return strconv.FormatFloat(float64(bps)/100, 'f', -1, 64) },
 	// pair passes the view plus one value to a partial.
 	"pair": func(v *view, x any) map[string]any { return map[string]any{"V": v, "X": x} },
 	// reqctx bundles what the "request-actions" partial needs.
@@ -185,3 +190,55 @@ func (v *view) NewKey() string { return store.NewID() }
 // IsAdmin is a nil-safe role check for templates.
 func (v *view) IsAdmin() bool { return v.User != nil && v.User.IsAdmin() }
 func (v *view) IsKid() bool   { return v.User != nil && v.User.IsKid() }
+
+// ledgerRow is one line of a ledger: a single entry, or the entries of a split
+// deposit or allowance (shared batch_id), or the two legs of a move between
+// jars (shared transfer_id).
+type ledgerRow struct {
+	store.LedgerEntry       // the first entry: comment, kind, actor, dates
+	Amount            int64 // the row's total (a move shows the amount moved)
+	Jars              string
+	Count             int
+	IsMove            bool
+	AllReversed       bool
+}
+
+// Reversible reports whether the row gets an Undo button.
+func (r ledgerRow) Reversible() bool {
+	return !r.AllReversed && !r.IsMove && r.Kind != store.KindReversal
+}
+
+func groupLedger(entries []store.LedgerEntry) []ledgerRow {
+	var rows []ledgerRow
+	for i := 0; i < len(entries); {
+		e := entries[i]
+		row := ledgerRow{LedgerEntry: e, Amount: e.Amount, Jars: e.JarName, Count: 1, AllReversed: e.Reversed()}
+		j := i + 1
+		for ; j < len(entries); j++ {
+			n := entries[j]
+			sameBatch := e.BatchID != "" && n.BatchID == e.BatchID
+			sameMove := e.TransferID != "" && n.TransferID == e.TransferID
+			if !sameBatch && !sameMove {
+				break
+			}
+			row.Count++
+			row.AllReversed = row.AllReversed && n.Reversed()
+			if sameMove {
+				out, in := e, n
+				if out.Amount > 0 {
+					out, in = n, e
+				}
+				row.IsMove, row.Amount, row.Jars = true, in.Amount, out.JarName+" → "+in.JarName
+				row.LedgerEntry = out
+			} else {
+				row.Amount += n.Amount
+			}
+		}
+		if row.Count > 1 && !row.IsMove {
+			row.Jars = strconv.Itoa(row.Count) + " jars"
+		}
+		rows = append(rows, row)
+		i = j
+	}
+	return rows
+}

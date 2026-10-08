@@ -136,11 +136,21 @@ func serve() error {
 		fmt.Fprintf(os.Stderr, "\n  Goldberry setup token: %s\n  Open /setup in a browser and paste it to create the first parent account.\n\n", token)
 	}
 
+	if n, err := svc.EnsureDefaultJars(ctx); err != nil {
+		return fmt.Errorf("add default jars: %w", err)
+	} else if n > 0 {
+		log.Info("gave existing kids Save and Give jars", "kids", n)
+	}
+
 	srv, err := web.New(ctx, svc, cfg, log, token)
 	if err != nil {
 		return err
 	}
 	sched := &scheduler.Scheduler{Interval: time.Minute, Log: log, Jobs: []scheduler.Job{
+		{Name: "allowance", Run: func(ctx context.Context) error {
+			_, err := svc.PostAllowance(ctx)
+			return err
+		}},
 		{Name: "request-expiry", Run: func(ctx context.Context) error {
 			n, err := svc.ExpireRequests(ctx)
 			if n > 0 {

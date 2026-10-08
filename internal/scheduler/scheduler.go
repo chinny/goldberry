@@ -1,7 +1,7 @@
 // Package scheduler runs Goldberry's background jobs on one in-process
 // ticker (plan §3, ADR 0005). Jobs must be idempotent: a duplicate or
-// catch-up run is a no-op. Phase 2 has one job, request expiry; allowance,
-// interest, the email outbox and backups join it in later phases.
+// catch-up run is a no-op. Today's jobs are recurring allowance and request
+// expiry; interest, the email outbox and backups join them in later phases.
 package scheduler
 
 import (
