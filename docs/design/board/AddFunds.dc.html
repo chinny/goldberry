@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Add or remove funds</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F6F64}a:hover{color:#155248}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 900px; box-sizing: border-box; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 18px; background: #F4F6F5; color: #13312E; font-family: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 17px; line-height: 26px;">
+  <div style="display: flex; align-items: center; gap: 4px;">
+    <a href="AdminHome.dc.html" aria-label="Back to dashboard" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #13312E;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 34px;">Ava’s money</h1>
+  </div>
+
+  <div role="radiogroup" aria-label="Add or remove" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 4px; border-radius: 14px; background: #E9EEEC;">
+    <button type="button" role="radio" aria-checked="true" style="min-height: 48px; border: 0; border-radius: 10px; background: #FFFFFF; color: #13312E; font: inherit; font-weight: 700; box-shadow: 0 1px 2px rgba(19,49,46,0.15);">Add</button>
+    <button type="button" role="radio" aria-checked="false" style="min-height: 48px; border: 0; border-radius: 10px; background: transparent; color: #4F6460; font: inherit; font-weight: 700;">Remove</button>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <label for="af-amount" style="font-size: 15px; line-height: 20px; font-weight: 700;">Amount</label>
+    <div style="display: flex; align-items: center; min-height: 68px; border: 2px solid #1F6F64; border-radius: 12px; padding: 0 16px; gap: 6px; background: #FFFFFF;">
+      <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; color: #4F6460;">$</span>
+      <input id="af-amount" class="num" value="5.00" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: #13312E; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px;">
+    </div>
+  </div>
+
+  <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+    <legend style="padding: 0; margin-bottom: 8px; font-size: 15px; line-height: 20px; font-weight: 700;">Into</legend>
+    <label style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; border: 2px solid #1F6F64; background: #FFFFFF;">
+      <span style="display: flex; align-items: center; gap: 10px; font-weight: 700;"><input type="radio" name="into" checked style="width: 20px; height: 20px; accent-color: #1F6F64;">Use Ava’s split</span>
+      <span style="display: flex; height: 12px; border-radius: 999px; overflow: hidden;">
+        <span style="width: 70%; background: #E2A81B;"></span><span style="width: 20%; background: #1F6F64;"></span><span style="width: 10%; background: #B4436C;"></span>
+      </span>
+      <span class="num" style="display: flex; justify-content: space-between; font-size: 14px; line-height: 20px; color: #4F6460;"><span>Spend $3.50</span><span>Save $1.00</span><span>Give $0.50</span></span>
+    </label>
+    <label style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 12px; border: 1px solid #D3DCD9; background: #FFFFFF;">
+      <input type="radio" name="into" style="width: 20px; height: 20px; accent-color: #1F6F64;">
+      <span style="flex: 1;">One jar</span>
+      <span style="font-size: 14px; color: #4F6460;">Spend ▾</span>
+    </label>
+  </fieldset>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <label for="af-comment" style="font-size: 15px; line-height: 20px; font-weight: 700;">What for? <span style="font-weight: 400; color: #4F6460;">Ava sees this</span></label>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <button type="button" aria-pressed="true" style="min-height: 40px; padding: 0 14px; border-radius: 8px; border: 2px solid #1F6F64; background: #DDEEEA; color: #13312E; font: inherit; font-size: 15px; font-weight: 700;">Chores</button>
+      <button type="button" aria-pressed="false" style="min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #D3DCD9; background: #FFFFFF; color: #13312E; font: inherit; font-size: 15px;">Birthday</button>
+      <button type="button" aria-pressed="false" style="min-height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #D3DCD9; background: #FFFFFF; color: #13312E; font: inherit; font-size: 15px;">Good report</button>
+    </div>
+    <input id="af-comment" value="Chores — mowed the lawn" style="min-height: 52px; border: 1px solid #D3DCD9; border-radius: 8px; padding: 0 14px; font: inherit; color: #13312E; background: #FFFFFF;">
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <label for="af-note" style="font-size: 15px; line-height: 20px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><path d="M3 3l18 18"></path></svg>
+      Private note <span style="font-weight: 400; color: #4F6460;">parents only</span>
+    </label>
+    <input id="af-note" placeholder="Optional" style="min-height: 52px; border: 1px dashed #4F6460; border-radius: 8px; padding: 0 14px; font: inherit; color: #13312E; background: #F4F6F5;">
+  </div>
+
+  <div style="flex: 1;"></div>
+  <button type="button" style="min-height: 60px; border: 0; border-radius: 14px; background: #1F6F64; color: #FFFFFF; font: inherit; font-size: 19px; font-weight: 700;"><span class="num">Add $5.00 for Ava</span></button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

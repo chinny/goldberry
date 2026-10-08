@@ -1,0 +1,30 @@
+{{define "actions"}}<a class="btn btn-primary btn-sm" href="/admin/users/new?role=kid">Add a kid</a>{{end}}
+{{define "main"}}
+{{$v := .}}
+<section class="stack">
+  <h2>Kids</h2>
+  {{if .D.Kids}}
+  <ul class="list">
+    {{range .D.Kids}}
+    {{$st := index $v.D.Login .ID}}
+    <li>
+      <div class="avatar tone-{{$v.Tone .}}" aria-hidden="true">{{.Initial}}</div>
+      <div class="what"><strong><a href="/admin/users/{{.ID}}">{{.DisplayName}}</a></strong><span class="meta">@{{.Username}} · signs in with a PIN</span></div>
+      {{if .Disabled}}<span class="pill pill-cancelled">Disabled</span>{{else if $st.Locked}}<span class="pill pill-locked">Locked</span>{{end}}
+    </li>
+    {{end}}
+  </ul>
+  {{else}}<p class="card empty-state">No kids yet.</p>{{end}}
+</section>
+<section class="stack">
+  <div class="spread"><h2>Parents</h2><a href="/admin/users/new?role=admin"><strong>Add a parent</strong></a></div>
+  <ul class="list">
+    {{range .D.Admins}}
+    <li>
+      <div class="what"><strong><a href="/admin/users/{{.ID}}">{{.DisplayName}}</a>{{if eq .ID $v.User.ID}} (you){{end}}</strong><span class="meta">@{{.Username}}{{if .Email}} · {{.Email}}{{end}}</span></div>
+      {{if .Disabled}}<span class="pill pill-cancelled">Disabled</span>{{end}}
+    </li>
+    {{end}}
+  </ul>
+</section>
+{{end}}

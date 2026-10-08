@@ -1,0 +1,51 @@
+{{define "main"}}
+{{$v := .}}
+<div class="split">
+  <section class="stack" aria-labelledby="waiting">
+    <h2 id="waiting">Waiting on you{{if .D.Pending}} <span class="held-ink">· {{len .D.Pending}}</span>{{end}}</h2>
+    {{if .D.Pending}}
+    <div class="queue">
+      {{range .D.Pending}}
+      <article class="card request-card stack">
+        <div class="row">
+          <a class="avatar tone-{{$v.ToneID .KidID}}" href="/admin/kids/{{.KidID}}" aria-hidden="true" tabindex="-1">{{initial .KidName}}</a>
+          <div class="grow">
+            <strong>{{.KidName}} · {{.Reason}}</strong>
+            <div class="caption">From {{.JarName}} · {{$v.When .CreatedAt}}{{if .ExpiresAt}} · expires {{$v.Date .ExpiresAt}}{{end}}</div>
+          </div>
+          <span class="money-m">{{$v.Money .Amount}}</span>
+        </div>
+        {{template "request-actions" (reqctx $v . "/admin" "")}}
+      </article>
+      {{end}}
+    </div>
+    {{else}}
+    <p class="card empty-state">Nothing waiting. When a kid asks for money, it shows up here and in the bell.</p>
+    {{end}}
+  </section>
+
+  <section class="stack" aria-labelledby="kids">
+    <div class="spread"><h2 id="kids">Kids</h2><a href="/admin/users/new?role=kid"><strong>Add a kid</strong></a></div>
+    {{range .D.Kids}}
+    <a class="card card-link stack" href="/admin/kids/{{.Kid.ID}}">
+      <div class="row">
+        <div class="avatar tone-{{$v.Tone .Kid}}" aria-hidden="true">{{.Kid.Initial}}</div>
+        <div class="grow"><strong>{{.Kid.DisplayName}}</strong><div class="caption">@{{.Kid.Username}}</div></div>
+        <div class="kid-total">
+          <span class="money-m">{{$v.Money .Total}}</span>
+          {{if .Held}}<span class="small held-ink">{{$v.Money .Held}} held</span>{{end}}
+        </div>
+      </div>
+      {{if gt (len .Jars) 1}}
+      <div class="jar-chips">{{range .Jars}}<div class="{{jarClass .Kind}}"><strong>{{.Name}}</strong><div class="num">{{$v.Money .Balance}}</div></div>{{end}}</div>
+      {{end}}
+    </a>
+    {{else}}
+    <div class="card empty-state stack">
+      <p>No kids yet.</p>
+      <p><a class="btn btn-primary" href="/admin/users/new?role=kid">Add your first kid</a></p>
+    </div>
+    {{end}}
+  </section>
+</div>
+{{end}}

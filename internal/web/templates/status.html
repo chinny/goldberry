@@ -1,0 +1,7 @@
+{{define "main"}}
+<div class="{{if not .User}}auth-card{{end}} stack">
+  {{if not .User}}<a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>goldberry</a><h1>{{.Title}}</h1>{{end}}
+  <p class="muted">{{.D}}</p>
+  <p><a href="/">Go home</a></p>
+</div>
+{{end}}

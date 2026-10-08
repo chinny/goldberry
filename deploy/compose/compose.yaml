@@ -1,0 +1,32 @@
+# Goldberry with Docker Compose. Quickstart:
+#   openssl rand -base64 32 > goldberry_key.txt
+#   docker compose up -d
+#   docker compose logs goldberry   # copy the one-time setup token
+#   open http://localhost:8080/setup
+#
+# Until the first release is published, build the image from this repo:
+#   docker compose up -d --build
+services:
+  goldberry:
+    image: ghcr.io/chinny/goldberry:1
+    build: ../..
+    restart: unless-stopped
+    ports: ["8080:8080"]            # or put it behind Caddy/Traefik for TLS
+    environment:
+      GOLDBERRY_SECRET_KEY_FILE: /run/secrets/goldberry_key
+      GOLDBERRY_BASE_URL: https://goldberry.home.example.com
+      TZ: America/New_York
+      # Plain-HTTP testing only (no TLS proxy in front). Remove for real use.
+      # GOLDBERRY_INSECURE_COOKIES: "true"
+    volumes:
+      # A named volume is created owned by the image's nonroot user (65532).
+      # To use a host folder instead (./data:/data), first: sudo chown 65532:65532 data
+      - goldberry-data:/data
+    secrets: [goldberry_key]
+
+volumes:
+  goldberry-data:
+
+secrets:
+  goldberry_key:
+    file: ./goldberry_key.txt       # openssl rand -base64 32 > goldberry_key.txt

@@ -1,0 +1,29 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+<form method="post" action="/requests" class="stack-lg">
+  {{template "csrf" .}}
+  <input type="hidden" name="key" value="{{.NewKey}}">
+  {{if gt (len .D.Jars) 1}}
+  <fieldset class="field">
+    <legend class="label">From which jar?</legend>
+    <div class="row-wrap">
+      {{range .D.Jars}}
+      <label class="check"><input type="radio" name="jar" value="{{.ID}}"{{if $v.Checked "jar" .ID}} checked{{end}}> {{.Name}} · {{$v.Money .Available}}</label>
+      {{end}}
+    </div>
+  </fieldset>
+  {{else}}{{with index .D.Jars 0}}<input type="hidden" name="jar" value="{{.ID}}">{{end}}{{end}}
+  <div class="field">
+    <label for="amount">How much?</label>
+    <div class="amount-input"><span>{{.Symbol}}</span><input id="amount" name="amount" inputmode="decimal" value="{{.Val "amount"}}" placeholder="0.00" autocomplete="off" required autofocus></div>
+    <span class="hint">You can ask for up to {{.Money .D.Available}}.</span>
+  </div>
+  <div class="field">
+    <label for="reason">What’s it for?</label>
+    <input id="reason" name="reason" value="{{.Val "reason"}}" maxlength="140" required placeholder="Movie with Jess">
+  </div>
+  <div class="alert alert-info">{{template "i-clock"}}<p>Your parents get a notification. The money is held until they say yes or no.</p></div>
+  <button class="btn btn-kid btn-block" type="submit">Send request</button>
+</form>
+{{end}}

@@ -1,0 +1,69 @@
+{{define "actions"}}<a class="btn btn-primary btn-sm" href="/admin/kids/{{.D.Kid.ID}}/funds">Add / remove</a>{{end}}
+{{define "main"}}
+{{$v := .}}
+<div class="row">
+  <div class="avatar tone-{{.Tone .D.Kid}}" aria-hidden="true">{{.D.Kid.Initial}}</div>
+  <p class="grow"><span class="money-m">{{.Money .D.Total}}</span> <span class="muted">total</span>{{if .D.Held}} · <span class="held-ink">{{.Money .D.Held}} held</span>{{end}}</p>
+  <a href="/admin/users/{{.D.Kid.ID}}">Account</a>
+</div>
+{{if .D.Login.Locked}}
+<div class="alert alert-error"><p><strong>Locked after {{.D.Login.Failures}} wrong PINs.</strong> {{.D.Kid.DisplayName}} can’t sign in until you unlock or reset the PIN.</p>
+  <form method="post" action="/admin/users/{{.D.Kid.ID}}/unlock">{{template "csrf" .}}<input type="hidden" name="next" value="/admin/kids/{{.D.Kid.ID}}"><button class="btn btn-sm btn-outline" type="submit">Unlock</button></form>
+</div>
+{{end}}
+
+<section class="stack" aria-label="Jars">
+  {{range .D.Jars}}
+  <div class="jar-row jar-{{jarClass .Kind}}">
+    <div class="grow"><strong>{{.Name}}</strong>{{if .Held}}<div class="small held-ink">{{$v.Money .Held}} held</div>{{end}}</div>
+    <span class="money-m">{{$v.Money .Balance}}</span>
+  </div>
+  {{end}}
+</section>
+
+{{if .D.Pending}}
+<section class="stack">
+  <h2>Waiting on you</h2>
+  {{range .D.Pending}}
+  <article class="card request-card stack">
+    <div class="row">
+      <div class="grow"><strong>{{.Reason}}</strong><div class="caption">From {{.JarName}} · {{$v.When .CreatedAt}}</div></div>
+      <span class="money-m">{{$v.Money .Amount}}</span>
+    </div>
+    {{template "request-actions" (reqctx $v . (printf "/admin/kids/%s" .KidID) "")}}
+  </article>
+  {{end}}
+</section>
+{{end}}
+
+<section class="stack">
+  <h2>Ledger</h2>
+  {{if .D.Ledger}}
+  <ul class="list">
+    {{range .D.Ledger}}
+    <li{{if .Reversed}} class="struck"{{end}}>
+      <div class="what">
+        <strong>{{if .Comment}}{{.Comment}}{{else}}{{.Kind}}{{end}}</strong>
+        <span class="meta">{{.Kind}} · {{.JarName}} · {{$v.When .EffectiveAt}} · {{if .ActorName}}{{.ActorName}}{{else}}system{{end}}{{if .Reversed}} · reversed{{end}}</span>
+        {{if .PrivateNote}}<span class="note">Note: {{.PrivateNote}}</span>{{end}}
+      </div>
+      <span class="amt {{if gt .Amount 0}}amt-credit{{else}}amt-debit{{end}}">{{$v.Signed .Amount}}</span>
+      {{if and (not .Reversed) (ne .Kind "reversal")}}
+      <details class="inline-confirm">
+        <summary class="icon-btn" aria-label="Undo {{.Comment}}">{{template "i-undo"}}</summary>
+        <form method="post" action="/admin/entries/{{.ID}}/reverse" class="popover">
+          {{template "csrf" $v}}
+          <input type="hidden" name="next" value="/admin/kids/{{.KidID}}">
+          <p class="small">Post a reversal of {{$v.Signed .Amount}}? Both entries stay in the history.</p>
+          <button class="btn btn-danger btn-sm" type="submit">Undo entry</button>
+        </form>
+      </details>
+      {{end}}
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="card empty-state">No money yet. <a href="/admin/kids/{{.D.Kid.ID}}/funds">Add some</a>.</p>
+  {{end}}
+</section>
+{{end}}

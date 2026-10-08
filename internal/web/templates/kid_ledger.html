@@ -1,0 +1,25 @@
+{{define "main"}}
+{{$v := .}}
+{{if .D.Requests}}
+<section class="stack">
+  <h2>My requests</h2>
+  <ul class="list">
+    {{range .D.Requests}}
+    <li>
+      <div class="what">
+        <strong>{{.Reason}}</strong>
+        <span class="meta">{{.JarName}} · asked {{$v.When .CreatedAt}}{{if and .DecidedByName (ne .Status "cancelled")}} · {{.DecidedByName}}{{end}}{{if and (eq .Status "approved") (ne .ApprovedAmount .Amount)}} · approved {{$v.Money .ApprovedAmount}}{{end}}</span>
+        {{if .DecisionNote}}<span class="note">“{{.DecisionNote}}”</span>{{end}}
+      </div>
+      <span class="amt">{{$v.Money .Amount}}</span>
+      {{template "status-pill" .Status}}
+    </li>
+    {{end}}
+  </ul>
+</section>
+{{end}}
+<section class="stack">
+  <h2>Money in and out</h2>
+  {{template "kid-entries" (pair . .D.Entries)}}
+</section>
+{{end}}

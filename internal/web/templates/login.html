@@ -1,0 +1,61 @@
+{{define "main"}}
+{{if eq .D.Step "pin"}}
+<form method="post" action="/login" class="pin-screen" data-pin-form data-pin-length="{{.D.PINLength}}">
+  {{template "csrf" .}}
+  <input type="hidden" name="username" value="{{.D.Username}}">
+  <input type="hidden" name="next" value="{{.D.Next}}">
+  <div class="spread">
+    <a href="/login" class="row">{{template "i-back"}}<strong>Not {{.D.Name}}?</strong></a>
+    <span class="brand">goldberry</span>
+  </div>
+  <div class="avatar avatar-lg tone-{{.Tone .D.Tone}}" aria-hidden="true">{{.D.Tone.Initial}}</div>
+  <h1>Hi, {{.D.Name}}</h1>
+  <p class="muted">Type your PIN</p>
+  {{template "flash" .}}
+  <div class="pin-dots" role="status" aria-label="0 of {{.D.PINLength}} digits entered">{{range seq .D.PINLength}}<span></span>{{end}}</div>
+  <label class="visually-hidden" for="pin">PIN</label>
+  <input class="pin-input" id="pin" name="secret" type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="6" autofocus>
+  <div class="pin-pad">
+    {{range $d := (seq 9)}}<button type="button" data-digit="{{add $d 1}}">{{add $d 1}}</button>{{end}}
+    <span></span>
+    <button type="button" data-digit="0">0</button>
+    <button type="button" class="ghost" data-back aria-label="Delete last digit">{{template "i-backspace"}}</button>
+  </div>
+  <label class="check"><input type="checkbox" name="remember" value="1" checked> Remember this device for 30 days</label>
+  <button class="btn btn-kid btn-block no-js-only" type="submit">Sign in</button>
+  <p class="caption">Forgot your PIN? Ask a parent to reset it.</p>
+</form>
+{{else}}
+<div class="auth-card">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>goldberry</a>
+  {{if eq .D.Step "password"}}
+    <h1>Hi, {{.D.Username}}</h1>
+    {{template "flash" .}}
+    <form method="post" action="/login" class="stack">
+      {{template "csrf" .}}
+      <input type="hidden" name="username" value="{{.D.Username}}">
+      <input type="hidden" name="next" value="{{.D.Next}}">
+      <input type="text" name="user_hint" value="{{.D.Username}}" autocomplete="username" hidden>
+      <div class="field">
+        <label for="secret">Password</label>
+        <input id="secret" name="secret" type="password" required autocomplete="current-password" autofocus>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+      <p class="caption"><a href="/login">Not {{.D.Username}}?</a> · Forgot it? Another parent can reset it, or run <code>goldberry admin reset-password</code>.</p>
+    </form>
+  {{else}}
+    <h1>Sign in</h1>
+    {{template "flash" .}}
+    <form method="post" action="/login" class="stack">
+      {{template "csrf" .}}
+      <input type="hidden" name="next" value="{{.D.Next}}">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" required autocapitalize="none" spellcheck="false" autocomplete="username" autofocus>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Next</button>
+    </form>
+  {{end}}
+</div>
+{{end}}
+{{end}}

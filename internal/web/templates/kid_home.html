@@ -1,0 +1,36 @@
+{{define "main"}}
+{{$v := .}}
+<section class="stack" aria-label="My jars">
+  {{range .D.Jars}}
+  <div class="jar jar-{{jarClass .Kind}}">
+    <div class="spread"><span class="jar-name">{{.Name}}</span><span class="tag">You can ask for</span></div>
+    <div class="big">{{$v.Money .Available}}</div>
+    {{if .Held}}<div class="held">{{$v.Money .Held}} waiting for approval</div>{{end}}
+  </div>
+  {{end}}
+  <a class="btn btn-kid btn-block" href="/requests/new">{{template "i-plus"}} Ask for money</a>
+</section>
+
+{{if .D.Pending}}
+<section class="stack">
+  <h2>Waiting for a yes</h2>
+  <ul class="list">
+    {{range .D.Pending}}
+    <li>
+      <div class="what"><strong>{{.Reason}}</strong><span class="meta">{{.JarName}} · {{$v.When .CreatedAt}}{{if .ExpiresAt}} · until {{$v.Date .ExpiresAt}}{{end}}</span></div>
+      <span class="amt">{{$v.Money .Amount}}</span>
+      <form method="post" action="/requests/{{.ID}}/cancel">
+        {{template "csrf" $v}}
+        <button class="btn btn-sm btn-outline" type="submit" aria-label="Cancel request for {{.Reason}}">Cancel</button>
+      </form>
+    </li>
+    {{end}}
+  </ul>
+</section>
+{{end}}
+
+<section class="stack">
+  <div class="spread"><h2>Recent</h2><a href="/ledger"><strong>All activity</strong></a></div>
+  {{template "kid-entries" (pair . .D.Recent)}}
+</section>
+{{end}}

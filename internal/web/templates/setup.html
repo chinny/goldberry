@@ -1,0 +1,46 @@
+{{define "main"}}
+<div class="auth-card">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>goldberry</a>
+  <div class="stack">
+    <h1>Set up Goldberry</h1>
+    <p class="muted">One install is one family. You’ll be the first parent; you can add another parent and the kids next.</p>
+  </div>
+  {{template "flash" .}}
+  <form method="post" action="/setup" class="stack" autocomplete="off">
+    {{template "csrf" .}}
+    <div class="field">
+      <label for="setup_token">Setup token</label>
+      <input id="setup_token" name="setup_token" required autocomplete="off" spellcheck="false">
+      <span class="hint">Printed in the container log at startup, so nobody else on your network can claim this install.</span>
+    </div>
+    <div class="field">
+      <label for="household_name">Family name</label>
+      <input id="household_name" name="household_name" value="{{.Val "household_name"}}" placeholder="The Chins" required maxlength="140">
+    </div>
+    <div class="row">
+      <div class="field grow">
+        <label for="currency">Currency</label>
+        <input id="currency" name="currency" value="{{.Val "currency"}}" maxlength="3" required spellcheck="false">
+      </div>
+      <div class="field grow">
+        <label for="timezone">Time zone</label>
+        <input id="timezone" name="timezone" value="{{.Val "timezone"}}" required spellcheck="false">
+      </div>
+    </div>
+    <h2>You</h2>
+    <div class="field">
+      <label for="display_name">Your name <span class="hint">what the kids see, e.g. Mom</span></label>
+      <input id="display_name" name="display_name" value="{{.Val "display_name"}}" required maxlength="40">
+    </div>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" value="{{.Val "username"}}" required autocapitalize="none" spellcheck="false" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="password">Password <span class="hint">at least 10 characters</span></label>
+      <input id="password" name="password" type="password" required minlength="10" autocomplete="new-password">
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Create our Goldberry</button>
+  </form>
+</div>
+{{end}}

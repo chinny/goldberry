@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>One kid and ledger, desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F6F64}a:hover{color:#155248}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: stretch; background: #F4F6F5; color: #13312E; font-family: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 16px; line-height: 24px;">
+
+  <aside style="flex: 1 1 232px; max-width: 100%; box-sizing: border-box; padding: 24px 16px; background: #13312E; color: #E7EFEC; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px;">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: #1F6F64; display: flex; align-items: center; justify-content: center;"><div style="width: 14px; height: 14px; border-radius: 999px; background: #E2A81B;"></div></div>
+      <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">goldberry</span>
+    </div>
+    <nav aria-label="Admin" style="display: flex; flex-direction: column; gap: 4px;">
+      <a href="DesktopAdmin.dc.html" style="min-height: 44px; padding: 0 12px; border-radius: 10px; color: #E7EFEC; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Dashboard</a>
+      <a href="#" aria-current="page" style="min-height: 44px; padding: 0 12px; border-radius: 10px; background: #1F6F64; color: #FFFFFF; font-weight: 700; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <span style="width: 20px; height: 20px; border-radius: 6px; background: #E2A81B; color: #13312E; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">A</span>Ava</a>
+      <a href="#" style="min-height: 44px; padding: 0 12px; border-radius: 10px; color: #E7EFEC; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <span style="width: 20px; height: 20px; border-radius: 6px; background: #5CC2B1; color: #13312E; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">L</span>Leo</a>
+      <a href="#" style="min-height: 44px; padding: 0 12px; border-radius: 10px; color: #E7EFEC; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"></path></svg>People</a>
+      <a href="#" style="min-height: 44px; padding: 0 12px; border-radius: 10px; color: #E7EFEC; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path></svg>Settings</a>
+    </nav>
+  </aside>
+
+  <main style="flex: 999 1 640px; min-width: 0; box-sizing: border-box; padding: 32px clamp(16px, 4vw, 48px) 48px;">
+    <div style="max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+      <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <div style="width: 56px; height: 56px; border-radius: 16px; background: #E2A81B; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px;">A</div>
+        <div style="flex: 1 1 240px; display: flex; flex-direction: column;">
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 36px; line-height: 42px;">Ava</h1>
+          <span class="num" style="font-size: 15px; color: #4F6460;">$222.65 total · $8.00 held · username ava</span>
+        </div>
+        <button type="button" style="min-height: 48px; padding: 0 18px; border: 2px solid #13312E; border-radius: 12px; background: #FFFFFF; color: #13312E; font: inherit; font-weight: 700;">Move between jars</button>
+        <button type="button" style="min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: #1F6F64; color: #FFFFFF; font: inherit; font-weight: 700;">Add or remove funds</button>
+      </header>
+
+      <section aria-label="Jars" style="display: flex; flex-wrap: wrap; gap: 16px;">
+        <div style="flex: 1 1 240px; border-radius: 20px; background: #FBEFCF; border-top: 8px solid #E2A81B; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;"><strong>Spend</strong><button type="button" style="min-height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid #D3C08A; background: transparent; color: #7A5200; font: inherit; font-size: 14px; font-weight: 700;">Add lock</button></div>
+          <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 46px;">$18.25</span>
+          <span class="num" style="font-size: 14px; color: #7A5200; font-weight: 700;">$8.00 held · $10.25 available</span>
+        </div>
+        <div style="flex: 1 1 240px; border-radius: 20px; background: #DDEEEA; border-top: 8px solid #1F6F64; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;"><strong>Save</strong><span style="display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; border: 2px dashed #1F6F64; color: #155248; font-size: 13px; font-weight: 700;">Ava’s self-lock</span></div>
+          <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 46px;">$192.00</span>
+          <span class="num" style="font-size: 14px; color: #155248;">1% / month interest · cap $5</span>
+        </div>
+        <div style="flex: 1 1 240px; border-radius: 20px; background: #F6E1E8; border-top: 8px solid #B4436C; padding: 18px 20px; display: flex; flex-direction: column; gap: 2px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;"><strong>Give</strong><span style="display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; background: #13312E; color: #FFFFFF; font-size: 13px; font-weight: 700;">Your lock · Dec 25</span></div>
+          <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; line-height: 46px;">$12.40</span>
+          <span style="font-size: 14px; color: #9A3359;">Goes out with a parent</span>
+        </div>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+        <section style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+            <h2 style="flex: 1 1 auto; margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 22px; line-height: 28px;">Ledger</h2>
+            <div role="group" aria-label="Filter by jar" style="display: flex; gap: 6px;">
+              <button type="button" aria-pressed="true" style="min-height: 40px; padding: 0 12px; border-radius: 8px; border: 2px solid #1F6F64; background: #DDEEEA; color: #13312E; font: inherit; font-size: 14px; font-weight: 700;">All jars</button>
+              <button type="button" aria-pressed="false" style="min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid #D3DCD9; background: #FFFFFF; color: #13312E; font: inherit; font-size: 14px;">Spend</button>
+              <button type="button" aria-pressed="false" style="min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid #D3DCD9; background: #FFFFFF; color: #13312E; font: inherit; font-size: 14px;">Save</button>
+              <button type="button" aria-pressed="false" style="min-height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid #D3DCD9; background: #FFFFFF; color: #13312E; font: inherit; font-size: 14px;">Give</button>
+            </div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; overflow-x: auto;">
+            <table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 15px;">
+              <thead>
+                <tr style="text-align: left; color: #4F6460; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em;">
+                  <th scope="col" style="padding: 14px 16px; font-weight: 700;">Date</th>
+                  <th scope="col" style="padding: 14px 8px; font-weight: 700;">What</th>
+                  <th scope="col" style="padding: 14px 8px; font-weight: 700;">Jar</th>
+                  <th scope="col" style="padding: 14px 8px; font-weight: 700;">By</th>
+                  <th scope="col" style="padding: 14px 8px; font-weight: 700; text-align: right;">Amount</th>
+                  <th scope="col" style="padding: 14px 16px;"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-top: 1px solid #E9EEEC; background: #FFFBEF;">
+                  <td class="num" style="padding: 12px 16px; color: #4F6460;">Today</td>
+                  <td style="padding: 12px 8px;"><strong>Movie with Jess</strong><div style="font-size: 13px; color: #7A5200; font-weight: 700;">Request · pending</div></td>
+                  <td style="padding: 12px 8px;">Spend</td>
+                  <td style="padding: 12px 8px; color: #4F6460;">Ava</td>
+                  <td class="num" style="padding: 12px 8px; text-align: right; color: #7A5200; font-weight: 700;">($8.00)</td>
+                  <td style="padding: 8px 16px; text-align: right;"><a href="#" style="font-weight: 700; font-size: 14px;">Review</a></td>
+                </tr>
+                <tr style="border-top: 1px solid #E9EEEC;">
+                  <td class="num" style="padding: 12px 16px; color: #4F6460;">Mar 8</td>
+                  <td style="padding: 12px 8px;"><strong>Weekly allowance</strong><div style="font-size: 13px; color: #4F6460;">Allowance · split 70/20/10</div></td>
+                  <td style="padding: 12px 8px;">3 jars</td>
+                  <td style="padding: 12px 8px; color: #4F6460;">System</td>
+                  <td class="num" style="padding: 12px 8px; text-align: right; color: #155248; font-weight: 700;">+$10.00</td>
+                  <td style="padding: 8px 16px; text-align: right;"><button type="button" style="min-height: 36px; padding: 0 10px; border: 0; background: transparent; color: #B42318; font: inherit; font-size: 14px; font-weight: 700;">Reverse</button></td>
+                </tr>
+                <tr style="border-top: 1px solid #E9EEEC;">
+                  <td class="num" style="padding: 12px 16px; color: #4F6460;">Mar 7</td>
+                  <td style="padding: 12px 8px;"><strong>Mowed the lawn</strong><div style="font-size: 13px; color: #4F6460; font-style: italic;">Private: did the front only</div></td>
+                  <td style="padding: 12px 8px;">Spend</td>
+                  <td style="padding: 12px 8px; color: #4F6460;">Dad</td>
+                  <td class="num" style="padding: 12px 8px; text-align: right; color: #155248; font-weight: 700;">+$5.00</td>
+                  <td style="padding: 8px 16px; text-align: right;"><button type="button" style="min-height: 36px; padding: 0 10px; border: 0; background: transparent; color: #B42318; font: inherit; font-size: 14px; font-weight: 700;">Reverse</button></td>
+                </tr>
+                <tr style="border-top: 1px solid #E9EEEC;">
+                  <td class="num" style="padding: 12px 16px; color: #4F6460;">Mar 7</td>
+                  <td style="padding: 12px 8px;"><strong>Candy at the store</strong><div style="font-size: 13px; color: #4F6460;">Withdrawal · approved by Mom</div></td>
+                  <td style="padding: 12px 8px;">Spend</td>
+                  <td style="padding: 12px 8px; color: #4F6460;">Mom</td>
+                  <td class="num" style="padding: 12px 8px; text-align: right; font-weight: 700;">−$2.50</td>
+                  <td style="padding: 8px 16px; text-align: right;"><button type="button" style="min-height: 36px; padding: 0 10px; border: 0; background: transparent; color: #B42318; font: inherit; font-size: 14px; font-weight: 700;">Reverse</button></td>
+                </tr>
+                <tr style="border-top: 1px solid #E9EEEC; color: #4F6460;">
+                  <td class="num" style="padding: 12px 16px;">Mar 5</td>
+                  <td style="padding: 12px 8px;"><strong style="text-decoration: line-through;">Birthday from Grandma</strong><div style="font-size: 13px;">Reversed Mar 5 by Dad · typo</div></td>
+                  <td style="padding: 12px 8px;">Save</td>
+                  <td style="padding: 12px 8px;">Dad</td>
+                  <td class="num" style="padding: 12px 8px; text-align: right; font-weight: 700; text-decoration: line-through;">+$50.00</td>
+                  <td style="padding: 8px 16px;"></td>
+                </tr>
+                <tr style="border-top: 1px solid #E9EEEC;">
+                  <td class="num" style="padding: 12px 16px; color: #4F6460;">Mar 1</td>
+                  <td style="padding: 12px 8px;"><strong>Interest · February</strong><div class="num" style="font-size: 13px; color: #4F6460;">avg $176.30 × 1% · 28 days</div></td>
+                  <td style="padding: 12px 8px;">Save</td>
+                  <td style="padding: 12px 8px; color: #4F6460;">System</td>
+                  <td class="num" style="padding: 12px 8px; text-align: right; color: #155248; font-weight: 700;">+$1.76</td>
+                  <td style="padding: 8px 16px;"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+          <div style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 18px;">Allowance</h3><a href="#" style="font-size: 14px; font-weight: 700;">Edit</a></div>
+            <div class="num" style="display: flex; flex-direction: column; line-height: 22px;"><strong>$10.00 every Saturday</strong><span style="font-size: 14px; color: #4F6460;">Split 70 / 20 / 10 · next Mar 15</span></div>
+            <button type="button" style="align-self: flex-start; min-height: 40px; padding: 0 12px; border: 1px solid #D3DCD9; border-radius: 10px; background: #FFFFFF; color: #13312E; font: inherit; font-size: 14px; font-weight: 700;">Pause</button>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 18px;">Goals</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; font-size: 15px;"><strong>Nintendo Switch</strong><span class="num" style="color: #4F6460;">$192 / $300</span></div>
+              <div style="height: 10px; border-radius: 999px; background: #E9EEEC; overflow: hidden;"><div style="width: 64%; height: 100%; background: #1F6F64;"></div></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 15px;"><strong>LEGO set</strong><span style="color: #7A5200; font-weight: 700;">Reached</span></div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+            <h3 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 18px;">Account</h3>
+            <span style="font-size: 14px; color: #4F6460;">2 signed-in devices · kitchen tablet, Ava’s laptop</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <button type="button" style="min-height: 40px; padding: 0 12px; border: 2px solid #13312E; border-radius: 10px; background: #FFFFFF; color: #13312E; font: inherit; font-size: 14px; font-weight: 700;">Reset PIN</button>
+              <button type="button" style="min-height: 40px; padding: 0 12px; border: 2px solid #13312E; border-radius: 10px; background: #FFFFFF; color: #13312E; font: inherit; font-size: 14px; font-weight: 700;">Sign out everywhere</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

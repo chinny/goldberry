@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parent view of one kid</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F6F64}a:hover{color:#155248}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1180px; box-sizing: border-box; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 18px; background: #F4F6F5; color: #13312E; font-family: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 17px; line-height: 26px;">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <a href="AdminHome.dc.html" aria-label="Back to dashboard" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #13312E;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <div style="width: 44px; height: 44px; border-radius: 14px; background: #E2A81B; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">A</div>
+    <div style="flex: 1; display: flex; flex-direction: column; line-height: 20px;">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; line-height: 30px;">Ava</h1>
+      <span class="num" style="font-size: 14px; color: #4F6460;">$222.65 total · $8.00 held</span>
+    </div>
+    <a href="AddFunds.dc.html" style="min-height: 44px; padding: 0 14px; border-radius: 12px; background: #1F6F64; color: #FFFFFF; font-weight: 700; font-size: 15px; display: flex; align-items: center; text-decoration: none;">Add / remove</a>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #D3DCD9; border-left: 8px solid #E2A81B;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;"><strong>Spend</strong><span class="num" style="font-size: 14px; color: #7A5200; font-weight: 700;">$8.00 held</span></div>
+      <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$18.25</span>
+      <button type="button" aria-label="Lock Spend" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #D3DCD9; background: #FFFFFF; color: #4F6460; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 7.5-2"></path></svg></button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #D3DCD9; border-left: 8px solid #1F6F64;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;"><strong>Save</strong><span style="font-size: 14px; color: #155248;">Ava’s self-lock · 1%/mo interest</span></div>
+      <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$192.00</span>
+      <button type="button" aria-label="Lock Save" style="width: 44px; height: 44px; border-radius: 12px; border: 2px dashed #1F6F64; background: #DDEEEA; color: #155248; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 7.5-2"></path></svg></button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #D3DCD9; border-left: 8px solid #B4436C;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;"><strong>Give</strong><span style="font-size: 14px; color: #4F6460;">Your lock · until Dec 25</span></div>
+      <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$12.40</span>
+      <button type="button" aria-label="Edit lock on Give" style="width: 44px; height: 44px; border-radius: 12px; border: 0; background: #13312E; color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></button>
+    </div>
+  </section>
+
+  <nav aria-label="Ava sections" style="display: flex; gap: 4px; border-bottom: 1px solid #D3DCD9;">
+    <a href="#" aria-current="page" style="min-height: 44px; padding: 0 12px; display: flex; align-items: center; font-weight: 700; color: #13312E; text-decoration: none; border-bottom: 3px solid #1F6F64;">Ledger</a>
+    <a href="#" style="min-height: 44px; padding: 0 12px; display: flex; align-items: center; color: #4F6460; text-decoration: none;">Allowance</a>
+    <a href="#" style="min-height: 44px; padding: 0 12px; display: flex; align-items: center; color: #4F6460; text-decoration: none;">Goals</a>
+    <a href="#" style="min-height: 44px; padding: 0 12px; display: flex; align-items: center; color: #4F6460; text-decoration: none;">Account</a>
+  </nav>
+
+  <ul style="list-style: none; margin: 0; padding: 0 14px; background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 16px;">
+    <li style="display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #E9EEEC;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 20px;"><strong>Weekly allowance</strong><span style="font-size: 14px; color: #4F6460;">Allowance · split · Sat · system</span></div>
+      <span class="num" style="font-weight: 700; color: #155248;">+$10.00</span>
+      <button type="button" aria-label="Reverse weekly allowance" style="width: 44px; height: 44px; border: 0; background: transparent; color: #4F6460; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+    </li>
+    <li style="display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #E9EEEC;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 20px;"><strong>Mowed the lawn</strong><span style="font-size: 14px; color: #4F6460;">Deposit · Spend · Fri · Dad</span><span style="font-size: 13px; color: #4F6460; font-style: italic;">Note: did the front only</span></div>
+      <span class="num" style="font-weight: 700; color: #155248;">+$5.00</span>
+      <button type="button" aria-label="Reverse mowed the lawn" style="width: 44px; height: 44px; border: 0; background: transparent; color: #4F6460; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+    </li>
+    <li style="display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #E9EEEC; color: #4F6460;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 20px;"><strong style="text-decoration: line-through;">Birthday from Grandma</strong><span style="font-size: 14px;">Reversed by Dad · typo</span></div>
+      <span class="num" style="font-weight: 700; text-decoration: line-through;">+$50.00</span>
+      <span style="width: 44px;"></span>
+    </li>
+    <li style="display: flex; align-items: center; gap: 10px; padding: 12px 0;">
+      <div style="flex: 1; display: flex; flex-direction: column; line-height: 20px;"><strong>Interest · February</strong><span class="num" style="font-size: 14px; color: #4F6460;">Save · avg $176.30 × 1% · 28 days</span></div>
+      <span class="num" style="font-weight: 700; color: #155248;">+$1.76</span>
+      <span style="width: 44px;"></span>
+    </li>
+  </ul>
+
+  <section style="display: flex; flex-direction: column; gap: 10px;">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 20px; line-height: 26px;">Account</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+      <button type="button" style="min-height: 44px; padding: 0 14px; border: 2px solid #13312E; border-radius: 12px; background: #FFFFFF; color: #13312E; font: inherit; font-size: 15px; font-weight: 700;">Reset PIN</button>
+      <button type="button" style="min-height: 44px; padding: 0 14px; border: 2px solid #13312E; border-radius: 12px; background: #FFFFFF; color: #13312E; font: inherit; font-size: 15px; font-weight: 700;">Sign out all devices</button>
+      <button type="button" style="min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: transparent; color: #B42318; font: inherit; font-size: 15px; font-weight: 700;">Disable account</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

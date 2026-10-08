@@ -1,0 +1,33 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+<form method="post" action="/admin/kids/{{.D.Kid.ID}}/entries" class="stack-lg" data-live-label data-kid="{{.D.Kid.DisplayName}}" data-symbol="{{.Symbol}}">
+  {{template "csrf" .}}
+  <input type="hidden" name="key" value="{{.NewKey}}">
+  <fieldset class="segmented" aria-label="Add or remove">
+    <input type="radio" id="dir-add" name="direction" value="add"{{if not (.Checked "direction" "remove")}} checked{{end}}><label for="dir-add">Add</label>
+    <input type="radio" id="dir-remove" name="direction" value="remove"{{if .Checked "direction" "remove"}} checked{{end}}><label for="dir-remove">Remove</label>
+  </fieldset>
+  <div class="field">
+    <label for="amount">Amount</label>
+    <div class="amount-input"><span>{{.Symbol}}</span><input id="amount" name="amount" inputmode="decimal" value="{{.Val "amount"}}" placeholder="0.00" autocomplete="off" required autofocus></div>
+    {{range .D.Jars}}<span class="hint">{{.Name}}: {{$v.Money .Available}} available{{if .Held}} ({{$v.Money .Held}} held){{end}}</span>{{end}}
+  </div>
+  {{if gt (len .D.Jars) 1}}
+  <fieldset class="field">
+    <legend class="label">Jar</legend>
+    {{range .D.Jars}}<label class="check"><input type="radio" name="jar" value="{{.ID}}"{{if $v.Checked "jar" .ID}} checked{{end}}> {{.Name}}</label>{{end}}
+  </fieldset>
+  {{else}}{{with index .D.Jars 0}}<input type="hidden" name="jar" value="{{.ID}}">{{end}}{{end}}
+  <div class="field">
+    <label for="comment">What for? <span class="hint">{{.D.Kid.DisplayName}} sees this</span></label>
+    <div class="row-wrap">{{range .D.Chips}}<button type="button" class="chip" aria-pressed="false" data-fill="comment" data-text="{{.}}">{{.}}</button>{{end}}</div>
+    <input id="comment" name="comment" value="{{.Val "comment"}}" maxlength="140" placeholder="Mowed the lawn">
+  </div>
+  <div class="field private">
+    <label for="private_note">Private note <span class="hint">parents only</span></label>
+    <input id="private_note" name="private_note" value="{{.Val "private_note"}}" maxlength="140" placeholder="Optional">
+  </div>
+  <button class="btn btn-primary btn-block" type="submit" data-label>Save</button>
+</form>
+{{end}}

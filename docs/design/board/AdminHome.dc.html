@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parent dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F6F64}a:hover{color:#155248}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1100px; box-sizing: border-box; display: flex; flex-direction: column; background: #F4F6F5; color: #13312E; font-family: 'Atkinson Hyperlegible Next', 'Atkinson Hyperlegible', system-ui, sans-serif; font-size: 17px; line-height: 26px;">
+  <header style="display: flex; align-items: center; gap: 12px; padding: 20px 20px 8px;">
+    <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+      <span style="font-size: 14px; color: #4F6460;">[Household name]</span>
+      <strong style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; line-height: 34px;">Dashboard</strong>
+    </div>
+    <a href="Notifications.dc.html" aria-label="Notifications, 2 unread" style="position: relative; width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF; border: 1px solid #D3DCD9; display: flex; align-items: center; justify-content: center; color: #13312E;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+      <span style="position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #B42318; color: #FFFFFF; font-size: 13px; line-height: 22px; font-weight: 700; text-align: center;">2</span>
+    </a>
+  </header>
+
+  <main style="display: flex; flex-direction: column; gap: 24px; padding: 12px 20px 24px;">
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 22px; line-height: 28px;">Waiting on you <span class="num" style="color: #7A5200;">· 2</span></h2>
+
+      <article style="background: #FFFFFF; border: 1px solid #D3DCD9; border-left: 0; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #E2A81B; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px;">A</div>
+          <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+            <strong>Ava · Movie with Jess</strong>
+            <span style="font-size: 14px; color: #4F6460;">From Spend · 12 min ago · expires Mar 22</span>
+          </div>
+          <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$8.00</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" style="flex: 1; min-height: 48px; border: 0; border-radius: 12px; background: #1F6F64; color: #FFFFFF; font: inherit; font-weight: 700;">Approve</button>
+          <button type="button" style="flex: 1; min-height: 48px; border: 2px solid #13312E; border-radius: 12px; background: #FFFFFF; color: #13312E; font: inherit; font-weight: 700;">Deny</button>
+          <button type="button" aria-label="More options" style="width: 48px; min-height: 48px; border: 1px solid #D3DCD9; border-radius: 12px; background: #FFFFFF; color: #13312E; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+          </button>
+        </div>
+      </article>
+
+      <article style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #1F6F64; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px;">L</div>
+          <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;">
+            <strong>Leo · Trading cards</strong>
+            <span style="font-size: 14px; color: #4F6460;">From Spend · yesterday</span>
+          </div>
+          <span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$20.00</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; background: #F4F6F5;">
+          <label for="lower" style="font-size: 15px; line-height: 20px; font-weight: 700;">Approve a lower amount</label>
+          <div style="display: flex; gap: 10px;">
+            <div style="flex: 1; display: flex; align-items: center; min-height: 48px; border: 2px solid #1F6F64; border-radius: 8px; padding: 0 12px; gap: 4px; background: #FFFFFF;">
+              <span style="color: #4F6460; font-weight: 700;">$</span>
+              <input id="lower" class="num" value="15.00" inputmode="decimal" style="flex: 1; min-width: 0; border: 0; outline: none; font: inherit; color: #13312E; background: transparent;">
+            </div>
+            <button type="button" style="min-height: 48px; padding: 0 16px; border: 0; border-radius: 12px; background: #1F6F64; color: #FFFFFF; font: inherit; font-weight: 700;">Approve $15</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 22px; line-height: 28px;">Kids</h2>
+        <a href="#" style="font-weight: 700; font-size: 15px;">Give everyone…</a>
+      </div>
+
+      <a href="AdminKid.dc.html" style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; color: #13312E; text-decoration: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 14px; background: #E2A81B; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">A</div>
+          <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;"><strong style="font-size: 19px;">Ava</strong><span style="font-size: 14px; color: #4F6460;">Allowance $10 every Sat</span></div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 22px;"><span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$222.65</span><span style="font-size: 13px; color: #4F6460;">total</span></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: 14px; line-height: 20px;">
+          <div style="padding: 8px 10px; border-radius: 10px; background: #FBEFCF;"><div style="font-weight: 700;">Spend</div><div class="num">$18.25</div></div>
+          <div style="padding: 8px 10px; border-radius: 10px; background: #DDEEEA;"><div style="font-weight: 700;">Save</div><div class="num">$192.00</div></div>
+          <div style="padding: 8px 10px; border-radius: 10px; background: #F6E1E8;"><div style="font-weight: 700;">Give</div><div class="num">$12.40</div></div>
+        </div>
+      </a>
+
+      <a href="AdminKid.dc.html" style="background: #FFFFFF; border: 1px solid #D3DCD9; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; color: #13312E; text-decoration: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 14px; background: #1F6F64; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">L</div>
+          <div style="flex: 1; display: flex; flex-direction: column; line-height: 22px;"><strong style="font-size: 19px;">Leo</strong><span style="font-size: 14px; color: #B42318; font-weight: 700;">Locked · 10 wrong PINs</span></div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 22px;"><span class="num" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px;">$46.10</span><span style="font-size: 13px; color: #4F6460;">total</span></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: 14px; line-height: 20px;">
+          <div style="padding: 8px 10px; border-radius: 10px; background: #FBEFCF;"><div style="font-weight: 700;">Spend</div><div class="num">$31.50</div></div>
+          <div style="padding: 8px 10px; border-radius: 10px; background: #DDEEEA;"><div style="font-weight: 700;">Save</div><div class="num">$9.60</div></div>
+          <div style="padding: 8px 10px; border-radius: 10px; background: #F6E1E8;"><div style="font-weight: 700;">Give</div><div class="num">$5.00</div></div>
+        </div>
+      </a>
+    </section>
+  </main>
+
+  <div style="flex: 1;"></div>
+  <nav aria-label="Main" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid #D3DCD9; background: #FFFFFF; padding: 6px 8px 10px;">
+    <a href="#" aria-current="page" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; font-weight: 700; color: #1F6F64; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>
+      Home
+    </a>
+    <a href="AddFunds.dc.html" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; color: #4F6460; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+      Add / remove
+    </a>
+    <a href="#" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; color: #4F6460; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"></path></svg>
+      People
+    </a>
+    <a href="#" style="min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 13px; color: #4F6460; text-decoration: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+      Settings
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

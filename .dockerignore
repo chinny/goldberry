@@ -1,0 +1,7 @@
+.git
+bin
+dist
+data
+e2e/node_modules
+docs/design/screens
+*.db*

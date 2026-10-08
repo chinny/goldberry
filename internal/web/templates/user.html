@@ -1,0 +1,66 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+{{$u := .D.Target}}
+<dl class="kv card">
+  <dt>Username</dt><dd>@{{$u.Username}}</dd>
+  <dt>Role</dt><dd>{{if $u.IsKid}}Kid{{else}}Parent (admin){{end}}</dd>
+  <dt>Status</dt><dd>{{if $u.Disabled}}<span class="pill pill-cancelled">Disabled</span>{{else if .D.Login.Locked}}<span class="pill pill-locked">Locked</span>{{else if .D.Login.Failures}}{{.D.Login.Failures}} recent wrong tries{{else}}Active{{end}}</dd>
+  {{if $u.Email}}<dt>Email</dt><dd>{{$u.Email}}</dd>{{end}}
+</dl>
+{{if $u.IsKid}}<p><a href="/admin/kids/{{$u.ID}}">See {{$u.DisplayName}}’s money →</a></p>{{end}}
+
+{{if or .D.Login.Locked .D.Login.Failures}}
+<form method="post" action="/admin/users/{{$u.ID}}/unlock" class="card stack">
+  {{template "csrf" .}}
+  <p>{{if .D.Login.Locked}}Locked after {{.D.Login.Failures}} wrong tries. Only a parent can unlock it.{{else}}Sign-in is slowed down after {{.D.Login.Failures}} wrong tries.{{end}}</p>
+  <button class="btn btn-outline" type="submit">Unlock {{$u.DisplayName}}</button>
+</form>
+{{end}}
+
+<form method="post" action="/admin/users/{{$u.ID}}/secret" class="card stack" autocomplete="off">
+  {{template "csrf" .}}
+  <h2>{{if $u.IsKid}}Reset PIN{{else}}Reset password{{end}}</h2>
+  <div class="field">
+    {{if $u.IsKid}}
+    <label for="secret">New PIN <span class="hint">{{.D.PINLen}} digits</span></label>
+    <input id="secret" name="secret" inputmode="numeric" pattern="[0-9]*" minlength="{{.D.PINLen}}" maxlength="{{.D.PINLen}}" required autocomplete="off">
+    {{else}}
+    <label for="secret">New password <span class="hint">at least 10 characters</span></label>
+    <input id="secret" name="secret" type="password" minlength="10" required autocomplete="new-password">
+    {{end}}
+  </div>
+  <button class="btn btn-outline" type="submit">Save and unlock</button>
+</form>
+
+<section class="card stack">
+  <h2>Signed-in devices</h2>
+  {{if .D.Sessions}}
+  <ul class="list">{{range .D.Sessions}}<li><div class="what"><strong>{{if .DeviceLabel}}{{.DeviceLabel}}{{else}}Browser{{end}}</strong><span class="meta">last seen {{$v.When .LastSeenAt}}{{if .Remember}} · remembered{{end}}</span></div></li>{{end}}</ul>
+  {{else}}<p class="muted">Not signed in anywhere.</p>{{end}}
+  <form method="post" action="/admin/users/{{$u.ID}}/revoke">
+    {{template "csrf" .}}
+    <button class="btn btn-outline" type="submit">Sign out of all devices</button>
+  </form>
+</section>
+
+{{if ne $u.ID .User.ID}}
+<form method="post" action="/admin/users/{{$u.ID}}/{{if $u.Disabled}}enable{{else}}disable{{end}}" class="card stack">
+  {{template "csrf" .}}
+  {{if $u.Disabled}}
+  <p>{{$u.DisplayName}} can’t sign in. Their history is kept.</p>
+  <button class="btn btn-outline" type="submit">Enable account</button>
+  {{else}}
+  <p class="muted">Disabling signs {{$u.DisplayName}} out everywhere and blocks sign-in. Nothing is deleted.</p>
+  <button class="btn btn-danger" type="submit">Disable account</button>
+  {{end}}
+</form>
+{{end}}
+
+{{if .D.Audit}}
+<section class="stack">
+  <h2>Account history</h2>
+  <ul class="list">{{range .D.Audit}}<li><div class="what"><strong>{{.Action}}</strong><span class="meta">{{index $v.D.Names .ActorID}} · {{$v.When .CreatedAt}}</span></div></li>{{end}}</ul>
+</section>
+{{end}}
+{{end}}

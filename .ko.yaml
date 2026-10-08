@@ -1,0 +1,17 @@
+# ko builds the pure-Go, CGO_ENABLED=0 binary straight onto distroless,
+# multi-arch, with no Dockerfile:  VERSION=1.2.3 ko build ./cmd/goldberry
+defaultBaseImage: gcr.io/distroless/static-debian12:nonroot
+defaultPlatforms:
+  - linux/amd64
+  - linux/arm64
+builds:
+  - id: goldberry
+    main: ./cmd/goldberry
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/chinny/goldberry/internal/buildinfo.Version={{.Env.VERSION}}
+      - -X github.com/chinny/goldberry/internal/buildinfo.Commit={{.Git.FullCommit}}
