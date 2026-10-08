@@ -278,3 +278,34 @@ type LockOverride struct {
 	Reason  string
 	JarName string
 }
+
+// Goal is a savings target (plan §7.3). Goals hold no money: progress is a
+// view over the jar's available balance, filled in priority order.
+type Goal struct {
+	ID           string
+	KidID        string
+	JarID        string
+	Name         string
+	Emoji        string
+	TargetAmount int64
+	Priority     int // lower fills first
+	CreatedBy    string
+	ReachedAt    *time.Time // first time it was fully funded (notified once)
+	ArchivedAt   *time.Time
+	CreatedAt    time.Time
+}
+
+// InterestRule is parent-paid interest on one kid's jar (plan §7.4).
+type InterestRule struct {
+	KidID      string
+	JarID      string
+	MonthlyBPS int   // 100 = 1% a month
+	MonthlyCap int64 // 0 = no cap
+	Active     bool
+}
+
+// DatedAmount is a ledger amount with its business date, for balance history.
+type DatedAmount struct {
+	Amount      int64
+	EffectiveAt time.Time
+}

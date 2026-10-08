@@ -331,6 +331,7 @@ type RequestInput struct {
 	IdempotencyKey string
 	Override       string // gauntlet token, for a self-locked jar
 	RemoveLock     bool   // with Override: remove the lock rather than break it once
+	GoalID         string // "Ask to buy it": the goal this buys
 }
 
 // CreateRequest places a hold for a withdrawal request. In one transaction it
@@ -372,6 +373,15 @@ func (s *Service) CreateRequest(ctx context.Context, kid store.User, in RequestI
 		} else if n >= MaxPendingRequests {
 			return ErrTooManyPending
 		}
+		if in.GoalID != "" {
+			g, err := tx.GetGoal(ctx, in.GoalID)
+			if err != nil || g.KidID != kid.ID || g.ArchivedAt != nil {
+				return invalid("goal", "Pick one of your goals.")
+			}
+			if in.JarID == "" {
+				in.JarID = g.JarID
+			}
+		}
 		jar, err := jarFor(ctx, tx, kid.ID, in.JarID)
 		if err != nil {
 			return err
@@ -385,7 +395,7 @@ func (s *Service) CreateRequest(ctx context.Context, kid store.User, in RequestI
 		}
 		now := s.now()
 		r := store.WithdrawalRequest{
-			ID: store.NewID(), KidID: kid.ID, JarID: jar.ID, Amount: in.Amount, Reason: reason,
+			ID: store.NewID(), KidID: kid.ID, JarID: jar.ID, Amount: in.Amount, Reason: reason, GoalID: in.GoalID,
 			Status: store.StatusPending, IdempotencyKey: in.IdempotencyKey, CreatedAt: now,
 			KidName: kid.DisplayName, JarName: jar.Name,
 		}
@@ -503,6 +513,14 @@ func (s *Service) DecideRequest(ctx context.Context, actor store.User, requestID
 				return err
 			}
 			return &ErrAlreadyDecided{Request: latest}
+		}
+		if d.Approve && r.GoalID != "" { // bought it: the goal is done
+			if g, err := tx.GetGoal(ctx, r.GoalID); err == nil && g.ArchivedAt == nil {
+				g.ArchivedAt = &now
+				if err := tx.UpdateGoal(ctx, g); err != nil {
+					return err
+				}
+			}
 		}
 		if d.Approve {
 			if _, err := tx.InsertLedgerEntry(ctx, store.LedgerEntry{

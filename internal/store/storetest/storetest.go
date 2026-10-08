@@ -127,7 +127,7 @@ func Run(t *testing.T, open Opener) {
 		{"Notifications", testNotifications},
 		{"Timestamps", testTimestamps},
 	}
-	for _, tc := range append(tests, jarTests...) {
+	for _, tc := range append(append(tests, jarTests...), goalTests...) {
 		t.Run(tc.name, func(t *testing.T) { tc.fn(t, open) })
 	}
 }

@@ -402,3 +402,65 @@ func TestJarsLocksAllowance(t *testing.T) {
 	mom.get("/admin", 200)
 	mom.mustSee("every Saturday", "Give locked")
 }
+
+// TestGoalsAndInterest covers Phase 5 through HTTP: a kid's goal filling up,
+// the reached notification, "Ask to buy it" and its approval, and interest.
+func TestGoalsAndInterest(t *testing.T) {
+	ts, svc := newServerWithService(t)
+	mom := newBrowser(t, ts)
+	mom.get("/setup", 200)
+	mom.post("/setup", url.Values{"setup_token": {setupToken}, "household_name": {"H"}, "currency": {"USD"}, "timezone": {"UTC"},
+		"display_name": {"Mom"}, "username": {"mom"}, "password": {"correct horse battery"}}, 200)
+	mom.post("/admin/users", url.Values{"role": {"kid"}, "display_name": {"Ava"}, "username": {"ava"}, "pin": {"2468"}}, 200)
+	kidID := find(t, `/admin/kids/([0-9a-f-]{36})`, mom.url)
+	mom.mustSee("Goals", "Interest", "% / month")
+
+	ava := newBrowser(t, ts)
+	ava.get("/login", 200)
+	ava.post("/login", url.Values{"username": {"ava"}, "secret": {"2468"}}, 200)
+	ava.mustSee("My goals", "Make it a goal")
+	ava.get("/goals/new", 200)
+	ava.post("/goals", url.Values{"name": {"LEGO set"}, "target": {"50"}, "emoji": {"🧱"}}, 200)
+	ava.mustSee("Goal saved", "LEGO set", "$50.00 to go", "0%")
+
+	// Mom deposits $100 split 70/20/10: $20 into Save fills 40%.
+	mom.get("/admin/kids/"+kidID+"/funds", 200)
+	mom.post("/admin/kids/"+kidID+"/entries", url.Values{"key": {"k1"}, "direction": {"add"}, "jar": {"split"}, "amount": {"100"}}, 200)
+	mom.mustSee("LEGO set", "40%")
+	saveJar := regexp.MustCompile(`/admin/jars/([0-9a-f-]{36})/locks`).FindAllStringSubmatch(mom.last, -1)[1][1]
+
+	// Interest on Save, with a projection.
+	mom.post("/admin/kids/"+kidID+"/interest", url.Values{"jar": {saveJar}, "rate": {"1"}, "cap": {""}, "active": {"1"}, "next": {"/admin/kids/" + kidID}}, 200)
+	// $20 at 1%/month, floored to the cent each month as it really posts.
+	mom.mustSee("Interest saved", "1% / month interest", "Left alone: about $22.49 in 12 months")
+	ava.get("/", 200)
+	ava.mustSee("in 12 months you’ll have about")
+
+	// Fill the goal; the job marks it reached once and tells everyone.
+	mom.get("/admin/kids/"+kidID+"/funds", 200)
+	mom.post("/admin/kids/"+kidID+"/entries", url.Values{"key": {"k2"}, "direction": {"add"}, "jar": {saveJar}, "amount": {"30"}}, 200)
+	if n, err := svc.CheckGoals(context.Background()); err != nil || n != 1 {
+		t.Fatalf("CheckGoals = %d, %v", n, err)
+	}
+	ava.get("/", 200)
+	ava.mustSee("You did it!", "Ask to buy it")
+	goalID := find(t, `/requests/new\?goal=([0-9a-f-]{36})`, ava.last)
+	ava.get("/requests/new?goal="+goalID, 200)
+	ava.mustSee(`value="50.00"`, `value="LEGO set"`, `name="goal"`)
+	ava.post("/requests", url.Values{"key": {"r1"}, "goal": {goalID}, "jar": {saveJar}, "amount": {"50"}, "reason": {"LEGO set"}}, 200)
+	ava.mustSee("Sent!", "$50.00 waiting") // held in Save
+
+	mom.get("/notifications", 200)
+	mom.mustSee("Ava reached a goal: LEGO set", "Ava asked for $50.00")
+	reqID := find(t, `/admin/requests/([0-9a-f-]{36})/approve`, mom.last)
+	mom.post("/admin/requests/"+reqID+"/approve", url.Values{"next": {"/admin/kids/" + kidID}}, 200)
+	mom.mustSee("Approved $50.00 for Ava")
+	mom.mustSee("No goals yet") // bought: the goal is done
+
+	// Goals belong to their kid.
+	leo := newBrowser(t, ts)
+	mom.post("/admin/users", url.Values{"role": {"kid"}, "display_name": {"Leo"}, "username": {"leo"}, "pin": {"1357"}}, 200)
+	leo.get("/login", 200)
+	leo.post("/login", url.Values{"username": {"leo"}, "secret": {"1357"}}, 200)
+	leo.get("/goals/"+goalID+"/edit", 404)
+}

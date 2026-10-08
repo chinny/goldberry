@@ -1,0 +1,35 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+<form method="post" action="{{.D.Action}}" class="stack-lg">
+  {{template "csrf" .}}
+  <div class="field">
+    <label for="name">What are you saving for?</label>
+    <input id="name" name="name" value="{{.Val "name"}}" maxlength="40" required placeholder="Nintendo Switch" autofocus>
+  </div>
+  <div class="field">
+    <label for="target">How much does it cost?</label>
+    <div class="amount-input"><span>{{.Symbol}}</span><input id="target" name="target" inputmode="decimal" value="{{.Val "target"}}" placeholder="300.00" required></div>
+  </div>
+  <div class="field">
+    <label for="emoji">Emoji <span class="hint">optional, makes it easy to spot</span></label>
+    <input id="emoji" name="emoji" value="{{.Val "emoji"}}" maxlength="16" class="pct-input">
+  </div>
+  {{if gt (len .D.Jars) 1}}
+  <div class="field">
+    <label for="jar">Which jar fills it?</label>
+    <select id="jar" name="jar">
+      {{range .D.Jars}}<option value="{{.ID}}"{{if or ($v.Checked "jar" .ID) (and (not ($v.Val "jar")) (eq (print .Kind) "save"))}} selected{{end}}>{{.Name}}</option>{{end}}
+    </select>
+    <span class="hint">Goals don’t hold money: the jar’s money fills your goals in order.</span>
+  </div>
+  {{end}}
+  <button class="btn {{if .IsKid}}btn-kid{{else}}btn-primary{{end}} btn-block" type="submit">Save goal</button>
+</form>
+{{with .D.Goal}}
+<form method="post" action="{{if $v.IsKid}}/goals/{{.ID}}/archive{{else}}/admin/goals/{{.ID}}/archive{{end}}">
+  {{template "csrf" $v}}<input type="hidden" name="next" value="{{if $v.IsKid}}/{{else}}/admin/kids/{{.KidID}}{{end}}">
+  <button class="link" type="submit">Remove this goal</button>
+</form>
+{{end}}
+{{end}}

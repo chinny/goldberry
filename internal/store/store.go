@@ -86,6 +86,17 @@ type Reader interface {
 	ListLocks(ctx context.Context, kidID string) ([]JarLock, error)
 	GetLock(ctx context.Context, id string) (JarLock, error)
 	ListLockOverrides(ctx context.Context, kidID string, limit int) ([]LockOverride, error)
+
+	// ListGoals lists a kid's goals in priority order (archived ones only when asked).
+	ListGoals(ctx context.Context, kidID string, includeArchived bool) ([]Goal, error)
+	GetGoal(ctx context.Context, id string) (Goal, error)
+
+	// ListInterestRules lists a kid's rules, or every rule when kidID is "".
+	ListInterestRules(ctx context.Context, kidID string) ([]InterestRule, error)
+	// JarBalanceBefore is a jar's balance from entries effective before t.
+	JarBalanceBefore(ctx context.Context, jarID string, t time.Time) (int64, error)
+	// JarEntriesBetween lists a jar's amounts effective in [from, to), oldest first.
+	JarEntriesBetween(ctx context.Context, jarID string, from, to time.Time) ([]DatedAmount, error)
 }
 
 // Writer holds every write. There is deliberately no way to update or delete
@@ -118,6 +129,10 @@ type Writer interface {
 	// RemoveLock reports false when the lock was already removed.
 	RemoveLock(ctx context.Context, id, removedBy string, at time.Time) (bool, error)
 	InsertLockOverride(ctx context.Context, o LockOverride) error
+
+	CreateGoal(ctx context.Context, g Goal) error
+	UpdateGoal(ctx context.Context, g Goal) error
+	PutInterestRule(ctx context.Context, r InterestRule) error
 
 	// InsertLedgerEntry appends an entry. It reports false, with no error,
 	// when the idempotency key was already used.

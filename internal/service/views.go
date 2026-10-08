@@ -16,6 +16,18 @@ type KidView struct {
 	Held      int64 // sum of pending holds
 	Split     []store.SplitRule
 	Schedules []ScheduleView
+	Goals     []GoalView
+	Interest  map[string]store.InterestRule // by jar ID
+}
+
+// Projection12 is what a jar grows to in 12 months with its interest rule,
+// or 0 when the jar earns no interest.
+func (v KidView) Projection12(j JarView) int64 {
+	r, ok := v.Interest[j.ID]
+	if !ok || !r.Active || r.MonthlyBPS <= 0 || j.Available() <= 0 {
+		return 0
+	}
+	return Projection(j.Available(), r.MonthlyBPS, r.MonthlyCap, 12)
 }
 
 // JarView is a jar with its balance, split share and the locks on it today.
@@ -134,6 +146,12 @@ func (s *Service) KidOverview(ctx context.Context, kidID string, recent int) (Ki
 		v.Held += j.Held
 	}
 	if v.Schedules, err = s.Schedules(ctx, kidID); err != nil {
+		return v, err
+	}
+	if v.Goals, err = s.Goals(ctx, s.Store, kidID); err != nil {
+		return v, err
+	}
+	if v.Interest, err = s.InterestRules(ctx, kidID); err != nil {
 		return v, err
 	}
 	if v.Pending, err = s.Store.ListRequests(ctx, store.RequestFilter{KidID: kidID, Status: store.StatusPending}); err != nil {

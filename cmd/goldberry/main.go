@@ -151,6 +151,14 @@ func serve() error {
 			_, err := svc.PostAllowance(ctx)
 			return err
 		}},
+		{Name: "interest", Run: func(ctx context.Context) error {
+			_, err := svc.PostInterest(ctx)
+			return err
+		}},
+		{Name: "goals", Run: func(ctx context.Context) error {
+			_, err := svc.CheckGoals(ctx)
+			return err
+		}},
 		{Name: "request-expiry", Run: func(ctx context.Context) error {
 			n, err := svc.ExpireRequests(ctx)
 			if n > 0 {
