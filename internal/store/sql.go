@@ -78,7 +78,7 @@ type queries struct {
 func (x queries) exec(ctx context.Context, query string, args ...any) (sql.Result, error) {
 	res, err := x.q.ExecContext(ctx, x.d.Rebind(query), args...)
 	if err != nil && x.d.IsUniqueViolation(err) {
-		return nil, fmt.Errorf("%w: %v", ErrConflict, err)
+		return nil, fmt.Errorf("%w: %w", ErrConflict, err)
 	}
 	return res, err
 }
@@ -635,22 +635,24 @@ func (x queries) DecideRequest(ctx context.Context, r WithdrawalRequest) (bool, 
 }
 
 func (x queries) ExpireRequests(ctx context.Context, now time.Time) ([]WithdrawalRequest, error) {
-	rows, err := x.rows(ctx, `UPDATE withdrawal_requests SET status = 'expired', decided_at = ?
-		WHERE status = 'pending' AND expires_at IS NOT NULL AND expires_at <= ? RETURNING id`, x.t(now), x.t(now))
-	if err != nil {
-		return nil, err
-	}
-	var ids []string
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			rows.Close()
+	ids, err := func() ([]string, error) {
+		rows, err := x.rows(ctx, `UPDATE withdrawal_requests SET status = 'expired', decided_at = ?
+			WHERE status = 'pending' AND expires_at IS NOT NULL AND expires_at <= ? RETURNING id`, x.t(now), x.t(now))
+		if err != nil {
 			return nil, err
 		}
-		ids = append(ids, id)
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
+		defer rows.Close()
+		var ids []string
+		for rows.Next() {
+			var id string
+			if err := rows.Scan(&id); err != nil {
+				return nil, err
+			}
+			ids = append(ids, id)
+		}
+		return ids, rows.Err()
+	}()
+	if err != nil {
 		return nil, err
 	}
 	out := make([]WithdrawalRequest, 0, len(ids))

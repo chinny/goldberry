@@ -63,7 +63,7 @@ func parse(lookup func(string) (string, bool)) (Config, error) {
 			return v, nil
 		}
 		if path, ok := lookup(name + "_FILE"); ok && path != "" {
-			b, err := os.ReadFile(path)
+			b, err := os.ReadFile(path) //nolint:gosec // the operator names this file (NAME_FILE)
 			if err != nil {
 				return "", fmt.Errorf("%s_FILE: %w", name, err)
 			}
@@ -167,7 +167,7 @@ func readEnvFile(path string) (map[string]string, error) {
 	if path == "" {
 		return vals, nil
 	}
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // fixed config path
 	if errors.Is(err, os.ErrNotExist) {
 		return vals, nil
 	}

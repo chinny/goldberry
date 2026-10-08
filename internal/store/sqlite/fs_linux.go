@@ -20,6 +20,6 @@ func networkFS(dir string) (string, bool) {
 	if err := syscall.Statfs(dir, &st); err != nil {
 		return "", false
 	}
-	name, ok := networkMagic[int64(st.Type)]
+	name, ok := networkMagic[int64(st.Type)] //nolint:unconvert // Type is int32 on some linux arches
 	return name, ok
 }

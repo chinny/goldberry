@@ -259,6 +259,7 @@ func isOpenPath(p string) bool {
 }
 
 func (s *Server) cookie(name, value string, maxAge time.Duration) *http.Cookie {
+	//nolint:gosec // Secure is on unless the operator opts out with GOLDBERRY_INSECURE_COOKIES
 	c := &http.Cookie{Name: name, Value: value, Path: "/", HttpOnly: true, Secure: !s.cfg.InsecureCookies, SameSite: http.SameSiteLaxMode}
 	if maxAge > 0 {
 		c.MaxAge = int(maxAge / time.Second)
@@ -267,7 +268,7 @@ func (s *Server) cookie(name, value string, maxAge time.Duration) *http.Cookie {
 }
 
 func (s *Server) clearCookie(w http.ResponseWriter, name string) {
-	c := s.cookie(name, "", 0)
+	c := s.cookie(name, "", 0) //nolint:gosec // see cookie
 	c.MaxAge = -1
 	http.SetCookie(w, c)
 }
@@ -362,7 +363,7 @@ func (s *Server) back(w http.ResponseWriter, r *http.Request, def, kind, msg str
 	if msg != "" {
 		s.flash(w, kind, msg)
 	}
-	http.Redirect(w, r, safeNext(r.PostFormValue("next"), def), http.StatusSeeOther)
+	http.Redirect(w, r, safeNext(r.PostFormValue("next"), def), http.StatusSeeOther) //nolint:gosec // safeNext allows same-site paths only
 }
 
 // userMessage returns a safe message for expected errors, or "".

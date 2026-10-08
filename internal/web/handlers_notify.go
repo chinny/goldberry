@@ -31,7 +31,7 @@ func (s *Server) notificationsCount(w http.ResponseWriter, r *http.Request, c *r
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	if n > 0 {
-		fmt.Fprint(w, n)
+		fmt.Fprint(w, n) //nolint:gosec // an integer count, not user input
 	}
 }
 
