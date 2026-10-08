@@ -16,15 +16,15 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: gofmt
         run: test -z "$(gofmt -l . | tee /dev/stderr)"
       - name: go vet
         run: go vet ./...
-      - uses: golangci/golangci-lint-action@v8
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.14
       - name: migration parity
@@ -46,8 +46,8 @@ jobs:
           --health-cmd "pg_isready -U postgres"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: go test (SQLite, everything)
@@ -63,8 +63,8 @@ jobs:
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -82,8 +82,8 @@ jobs:
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: azure/setup-helm@v4
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
       - name: helm lint
         run: helm lint deploy/helm/goldberry --strict
       - name: chart refuses two replicas on SQLite
