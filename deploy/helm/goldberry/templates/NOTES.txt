@@ -1,0 +1,25 @@
+Goldberry is starting.
+
+1. Get the one-time setup token (first install only):
+
+   kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "goldberry.fullname" . }} | grep -i "setup token"
+
+2. Open Goldberry and go to /setup:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}/setup
+{{- end }}
+{{- else if .Values.httpRoute.enabled }}
+{{- range .Values.httpRoute.hostnames }}
+   https://{{ . }}/setup
+{{- end }}
+{{- else }}
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "goldberry.fullname" . }} 8080:{{ .Values.service.port }}
+   then http://localhost:8080/setup{{ if not .Values.insecureCookies }} (sign-in needs HTTPS; set insecureCookies=true to try it over plain HTTP){{ end }}
+{{- end }}
+
+{{- if include "goldberry.sqlite" . }}
+
+Data lives in SQLite on the PersistentVolumeClaim (kept on uninstall).
+Nightly snapshots go to /data/backups at {{ .Values.backup.schedule }} ({{ .Values.timezone }}); copy them off the cluster.
+{{- end }}
