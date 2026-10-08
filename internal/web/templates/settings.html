@@ -1,0 +1,32 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+<form method="post" action="/admin/settings" class="stack-lg">
+  {{template "csrf" .}}
+  <div class="field">
+    <label for="name">Family name</label>
+    <input id="name" name="name" value="{{.Val "name"}}" maxlength="140" required>
+  </div>
+  <div class="field">
+    <label for="timezone">Time zone <span class="hint">used for dates and, later, allowance days</span></label>
+    <input id="timezone" name="timezone" value="{{.Val "timezone"}}" required spellcheck="false">
+  </div>
+  <div class="field">
+    <label>Currency</label>
+    <p>{{.House.Currency}} <span class="hint">· fixed at setup</span></p>
+  </div>
+  <div class="field">
+    <label for="pin_length">Kid PIN length</label>
+    <select id="pin_length" name="pin_length">
+      {{range $n := (seq 3)}}{{$len := add $n 4}}<option value="{{$len}}"{{if eq ($.Val "pin_length") (printf "%d" $len)}} selected{{end}}>{{$len}} digits</option>{{end}}
+    </select>
+    <span class="hint">Applies to new and reset PINs.</span>
+  </div>
+  <div class="field">
+    <label for="request_expiry_days">Request expiry <span class="hint">days until an unanswered request lapses; 0 = never</span></label>
+    <input id="request_expiry_days" name="request_expiry_days" type="number" min="0" max="365" value="{{.Val "request_expiry_days"}}" required>
+    <span class="hint">Only affects new requests.</span>
+  </div>
+  <label class="check"><input type="checkbox" name="allow_negative" value="1"{{if .Checked "allow_negative" "1"}} checked{{end}}> Let parents take a balance below zero (“you owe us for the window”)</label>
+  <button class="btn btn-primary btn-block" type="submit">Save settings</button>
+</form>
+{{end}}

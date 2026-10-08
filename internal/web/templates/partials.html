@@ -1,0 +1,74 @@
+{{/* Inline stroke icons (no icon font, no emoji). */}}
+{{define "i-home"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>{{end}}
+{{define "i-people"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>{{end}}
+{{define "i-settings"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>{{end}}
+{{define "i-bell"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>{{end}}
+{{define "i-list"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>{{end}}
+{{define "i-plus"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>{{end}}
+{{define "i-back"}}<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>{{end}}
+{{define "i-undo"}}<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>{{end}}
+{{define "i-clock"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{end}}
+{{define "i-backspace"}}<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9l-6 6M11 9l6 6"/></svg>{{end}}
+
+{{define "csrf"}}<input type="hidden" name="_csrf" value="{{.CSRF}}">{{end}}
+
+{{/* A pending request with Approve / Deny / Approve a lower amount.
+     Call with (dict-like) .: the view as $ and a request as .R via "request-card-ctx". */}}
+{{define "request-actions"}}
+<div class="actions">
+  <form method="post" action="/admin/requests/{{.R.ID}}/approve" class="grow">
+    <input type="hidden" name="_csrf" value="{{.V.CSRF}}">
+    <input type="hidden" name="next" value="{{.Next}}">
+    {{if .N}}<input type="hidden" name="notification" value="{{.N}}">{{end}}
+    <button class="btn btn-primary" type="submit">Approve</button>
+  </form>
+  <form method="post" action="/admin/requests/{{.R.ID}}/deny" class="grow">
+    <input type="hidden" name="_csrf" value="{{.V.CSRF}}">
+    <input type="hidden" name="next" value="{{.Next}}">
+    {{if .N}}<input type="hidden" name="notification" value="{{.N}}">{{end}}
+    <button class="btn btn-outline" type="submit">Deny</button>
+  </form>
+  <details class="inline-confirm">
+    <summary class="small"><span class="btn-quiet">Approve less or add a note…</span></summary>
+    <form method="post" action="/admin/requests/{{.R.ID}}/approve" class="popover">
+      <input type="hidden" name="_csrf" value="{{.V.CSRF}}">
+      <input type="hidden" name="next" value="{{.Next}}">
+      {{if .N}}<input type="hidden" name="notification" value="{{.N}}">{{end}}
+      <div class="field">
+        <label for="lower-{{.R.ID}}">Approve a lower amount</label>
+        <div class="amount-input"><span>{{.V.Symbol}}</span><input id="lower-{{.R.ID}}" name="approved_amount" inputmode="decimal" value="{{.V.Plain .R.Amount}}" autocomplete="off"></div>
+      </div>
+      <div class="field">
+        <label for="note-{{.R.ID}}">Note <span class="hint">{{.R.KidName}} sees this</span></label>
+        <input id="note-{{.R.ID}}" name="note" maxlength="140">
+      </div>
+      <div class="row">
+        <button class="btn btn-primary grow" type="submit">Approve</button>
+        <button class="btn btn-outline grow" type="submit" formaction="/admin/requests/{{.R.ID}}/deny">Deny with note</button>
+      </div>
+    </form>
+  </details>
+</div>
+{{end}}
+
+{{define "status-pill"}}<span class="pill pill-{{.}}">{{if eq (print .) "pending"}}Waiting{{else if eq (print .) "approved"}}Approved{{else if eq (print .) "denied"}}Not this time{{else if eq (print .) "cancelled"}}Cancelled{{else}}Expired{{end}}</span>{{end}}
+
+{{/* A kid's ledger rows. Private notes are never shown to kids. */}}
+{{define "kid-entries"}}
+{{$v := .V}}
+{{if .X}}
+<ul class="list">
+  {{range .X}}
+  <li{{if .Reversed}} class="struck"{{end}}>
+    <div class="what">
+      <strong>{{if .Comment}}{{.Comment}}{{else if eq .Kind "deposit"}}Money added{{else if eq .Kind "withdrawal"}}Money out{{else if eq .Kind "reversal"}}Undo{{else}}{{.Kind}}{{end}}</strong>
+      <span class="meta">{{if eq .Kind "reversal"}}Undone by {{.ActorName}}{{else if .Reversed}}Undone{{else if .RequestID}}Approved by {{.ActorName}}{{else if .ActorName}}From {{.ActorName}}{{else}}Automatic{{end}} · {{.JarName}} · {{$v.When .EffectiveAt}}</span>
+    </div>
+    <span class="amt {{if gt .Amount 0}}amt-credit{{else}}amt-debit{{end}}">{{$v.Signed .Amount}}</span>
+  </li>
+  {{end}}
+</ul>
+{{else}}
+<p class="card empty-state">Nothing here yet. When a grown-up adds money, it shows up here.</p>
+{{end}}
+{{end}}

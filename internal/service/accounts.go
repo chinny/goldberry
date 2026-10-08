@@ -430,6 +430,7 @@ func (s *Service) recordFailure(ctx context.Context, u store.User) error {
 		if d := auth.Delay(a.Failures); d > 0 {
 			next := now.Add(d)
 			a.NextAllowedAt = &next
+			result = &ThrottledError{Wait: d}
 		}
 		p := notify.Payload{KidID: u.ID, KidName: u.DisplayName, Failures: a.Failures}
 		var kind string

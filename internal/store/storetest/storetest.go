@@ -511,7 +511,8 @@ func testLoginLock(t *testing.T, open Opener) {
 	}
 	for i := 1; i <= 9; i++ {
 		_, err := f.Svc.Login(ctx, "ava", "0000", false, "")
-		if !errors.Is(err, service.ErrBadCredentials) {
+		var th *service.ThrottledError
+		if i < 3 && !errors.Is(err, service.ErrBadCredentials) || i >= 3 && !errors.As(err, &th) {
 			t.Fatalf("attempt %d: %v", i, err)
 		}
 		// While backing off, even the right PIN is refused.

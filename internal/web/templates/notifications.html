@@ -1,0 +1,28 @@
+{{define "actions"}}{{if .Unread}}<form method="post" action="/notifications/read">{{template "csrf" .}}<button class="btn btn-quiet" type="submit">Mark all read</button></form>{{end}}{{end}}
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+{{$v := .}}
+{{range .D}}
+<article class="card notif request-card stack{{if not .ReadAt}} unread{{end}}">
+  <div>
+    <p class="title">{{.Title}}</p>
+    <p class="caption">{{if .Body}}{{.Body}} · {{end}}{{$v.When .CreatedAt}}</p>
+  </div>
+  {{if and $v.IsAdmin .Request (eq .Kind "request_created")}}
+    {{if eq .Request.Status "pending"}}
+      {{template "request-actions" (reqctx $v (deref .Request) "/notifications" .ID)}}
+    {{else if eq .Request.Status "approved"}}
+      <p class="decided">Approved{{if ne .Request.ApprovedAmount .Request.Amount}} {{$v.Money .Request.ApprovedAmount}}{{end}} by {{.Request.DecidedByName}} · {{$v.When (derefTime .Request.DecidedAt)}}</p>
+    {{else if eq .Request.Status "denied"}}
+      <p class="decided">Denied by {{.Request.DecidedByName}}</p>
+    {{else}}
+      <p class="caption">{{template "status-pill" .Request.Status}}</p>
+    {{end}}
+  {{else if and $v.IsAdmin (eq .Kind "kid_locked" "signin_failures")}}
+    <p><a href="/admin/users/{{payloadKid .}}">Unlock or reset PIN →</a></p>
+  {{end}}
+</article>
+{{else}}
+<p class="card empty-state">All quiet. Nothing to see yet.</p>
+{{end}}
+{{end}}

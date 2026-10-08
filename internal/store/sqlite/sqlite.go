@@ -111,9 +111,9 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 // Dialect is the SQLite flavour of the portable query subset.
 type Dialect struct{}
 
-func (Dialect) Name() string             { return "sqlite" }
-func (Dialect) Rebind(q string) string   { return q }
-func (Dialect) Time(t time.Time) any     { return t.UTC().Format(store.TimeLayout) }
+func (Dialect) Name() string           { return "sqlite" }
+func (Dialect) Rebind(q string) string { return q }
+func (Dialect) Time(t time.Time) any   { return t.UTC().Format(store.TimeLayout) }
 func (Dialect) IsUniqueViolation(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed")
 }

@@ -1,0 +1,32 @@
+{{define "width"}} narrow{{end}}
+{{define "main"}}
+<form method="post" action="/admin/users" class="stack-lg" autocomplete="off">
+  {{template "csrf" .}}
+  <input type="hidden" name="role" value="{{.D}}">
+  <div class="field">
+    <label for="display_name">Name <span class="hint">{{if eq .D "kid"}}what they’re called at home{{else}}e.g. Dad — the kids see this{{end}}</span></label>
+    <input id="display_name" name="display_name" value="{{.Val "display_name"}}" maxlength="40" required autofocus>
+  </div>
+  <div class="field">
+    <label for="username">Username <span class="hint">letters and numbers; used to sign in</span></label>
+    <input id="username" name="username" value="{{.Val "username"}}" required autocapitalize="none" spellcheck="false">
+  </div>
+  {{if eq .D "kid"}}
+  <div class="field">
+    <label for="pin">PIN <span class="hint">{{.House.PINLength}} digits. Hashed; nobody can read it back.</span></label>
+    <input id="pin" name="pin" inputmode="numeric" pattern="[0-9]*" minlength="{{.House.PINLength}}" maxlength="{{.House.PINLength}}" required autocomplete="off">
+  </div>
+  <p class="caption">Kids get a Spend jar to start. They never have an email address.</p>
+  {{else}}
+  <div class="field">
+    <label for="password">Password <span class="hint">at least 10 characters</span></label>
+    <input id="password" name="password" type="password" minlength="10" required autocomplete="new-password">
+  </div>
+  <div class="field">
+    <label for="email">Email <span class="hint">optional; for notifications later</span></label>
+    <input id="email" name="email" type="email" value="{{.Val "email"}}">
+  </div>
+  {{end}}
+  <button class="btn btn-primary btn-block" type="submit">{{.Title}}</button>
+</form>
+{{end}}
