@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"io/fs"
+	"mime"
 	"net/http"
 	"time"
 
@@ -91,6 +92,10 @@ func (s *Server) routes() http.Handler {
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { s.notFound(w, r) })
 	return mux
+}
+
+func init() {
+	_ = mime.AddExtensionType(".webmanifest", "application/manifest+json")
 }
 
 func cacheForever(h http.Handler) http.Handler {

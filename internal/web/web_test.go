@@ -147,6 +147,8 @@ func TestEndToEnd(t *testing.T) {
 	mom.get("/metrics", 200)
 	mom.mustSee("goldberry_http_requests_total")
 	mom.get("/static/app.css", 200)
+	mom.get("/static/manifest.webmanifest", 200)
+	mom.mustSee(`"display": "standalone"`)
 
 	// First run: everything redirects to /setup, which needs the token.
 	mom.get("/", 200)
