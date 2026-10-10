@@ -27,6 +27,8 @@
   </div>
 </section>
 
+{{with .D.Preview}}{{template "graph-preview" (pair $v .)}}{{end}}
+
 {{if .D.Pending}}
 <section class="stack">
   <h2>Waiting for a yes</h2>

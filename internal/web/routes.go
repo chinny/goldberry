@@ -33,6 +33,7 @@ func (s *Server) routes() http.Handler {
 	// Kid routes sit at the root: a kid's home screen is the product.
 	mux.HandleFunc("GET /{$}", s.home)
 	mux.HandleFunc("GET /ledger", s.kid(s.kidLedger))
+	mux.HandleFunc("GET /graph", s.kid(s.kidGraph))
 	mux.HandleFunc("GET /requests/new", s.kid(s.kidRequestPage))
 	mux.HandleFunc("POST /requests", s.kid(s.kidRequestSubmit))
 	mux.HandleFunc("POST /requests/{id}/cancel", s.kid(s.kidRequestCancel))
@@ -50,6 +51,7 @@ func (s *Server) routes() http.Handler {
 
 	mux.HandleFunc("GET /admin", s.admin(s.adminHome))
 	mux.HandleFunc("GET /admin/kids/{id}", s.admin(s.adminKid))
+	mux.HandleFunc("GET /admin/kids/{id}/graph", s.admin(s.adminGraph))
 	mux.HandleFunc("GET /admin/kids/{id}/funds", s.admin(s.adminFundsPage))
 	mux.HandleFunc("POST /admin/kids/{id}/entries", s.admin(s.adminFundsSubmit))
 	mux.HandleFunc("POST /admin/entries/{id}/reverse", s.admin(s.adminReverse))

@@ -36,6 +36,7 @@ On Kubernetes: `helm install goldberry oci://ghcr.io/chinny/charts/goldberry`. S
 - **Recurring allowance:** weekly, every two weeks or monthly, on the household's calendar. Catches up after downtime, never double-pays, can be paused.
 - **Goals:** "Nintendo Switch, $300" fills from the Save jar's money in priority order. Reaching one tells everyone and offers "Ask to buy it".
 - **Parent-paid interest:** a monthly rate on the average daily balance (so a deposit on the 30th earns almost nothing), with an optional cap and a "leave it for 12 months" projection.
+- **Balance graph:** a kid's money over the last week, month or three months, or any pair of dates, as the total, every jar, or one jar. Each change is a dot that leads to what happened ([ADR 0013](docs/adr/0013-server-drawn-svg-charts.md)).
 - **Notifications:** an in-app bell with Approve/Deny inline.
 - **Operations:** nightly SQLite snapshots, a portable export/import between SQLite and Postgres, a Helm chart, `/healthz`, `/readyz`, `/metrics`, signed multi-arch images.
 - Light and dark themes, phone-first, installable as an app (PWA), works without JavaScript, no CDN (works offline on a LAN).

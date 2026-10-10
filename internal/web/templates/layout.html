@@ -30,6 +30,7 @@
       {{else}}
         <a class="nav" href="/"{{if eq .Nav "home"}} aria-current="page"{{end}}>{{template "i-home"}}Home</a>
         <a class="nav" href="/ledger"{{if eq .Nav "activity"}} aria-current="page"{{end}}>{{template "i-list"}}Activity</a>
+        <a class="nav" href="/graph"{{if eq .Nav "graph"}} aria-current="page"{{end}}>{{template "i-graph"}}Graph</a>
         <a class="nav" href="/requests/new"{{if eq .Nav "ask"}} aria-current="page"{{end}}>{{template "i-plus"}}Ask for money</a>
         <a class="nav" href="/move"{{if eq .Nav "move"}} aria-current="page"{{end}}>{{template "i-move"}}Move between jars</a>
       {{end}}
@@ -77,6 +78,7 @@
     {{else}}
       <a href="/"{{if eq .Nav "home"}} aria-current="page"{{end}}>{{template "i-home"}}Home</a>
       <a href="/ledger"{{if eq .Nav "activity"}} aria-current="page"{{end}}>{{template "i-list"}}Activity</a>
+      <a href="/graph"{{if eq .Nav "graph"}} aria-current="page"{{end}}>{{template "i-graph"}}Graph</a>
       <a href="/requests/new"{{if eq .Nav "ask"}} aria-current="page"{{end}}>{{template "i-plus"}}Ask</a>
     {{end}}
   </nav>

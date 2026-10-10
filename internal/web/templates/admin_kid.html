@@ -39,7 +39,7 @@
   </div>
   {{end}}
 </section>
-<p class="small"><a href="/admin/kids/{{$kid.ID}}/jars">Jars and split ({{.D.SplitSummary}})</a> · <a href="/admin/kids/{{$kid.ID}}/move">Move between jars</a></p>
+<p class="small"><a href="/admin/kids/{{$kid.ID}}/jars">Jars and split ({{.D.SplitSummary}})</a> · <a href="/admin/kids/{{$kid.ID}}/move">Move between jars</a> · <a href="/admin/kids/{{$kid.ID}}/graph">Graph</a></p>
 
 <div class="split">
   <div class="stack-lg">
@@ -67,6 +67,7 @@
     </section>
   </div>
   <aside class="stack-lg">
+    {{with .D.Preview}}{{template "graph-preview" (pair $v .)}}{{end}}
     <section class="card stack">
       <div class="spread"><h2>Allowance</h2><a href="/admin/kids/{{$kid.ID}}/allowance">Add</a></div>
       {{range .D.Schedules}}

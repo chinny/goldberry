@@ -504,6 +504,14 @@ func (x queries) ListLedger(ctx context.Context, f LedgerFilter) ([]LedgerEntry,
 		q += ` AND e.jar_id = ?`
 		args = append(args, f.JarID)
 	}
+	if !f.From.IsZero() {
+		q += ` AND e.effective_at >= ?`
+		args = append(args, x.t(f.From))
+	}
+	if !f.To.IsZero() {
+		q += ` AND e.effective_at < ?`
+		args = append(args, x.t(f.To))
+	}
 	q += ` ORDER BY e.effective_at DESC, e.created_at DESC, e.id DESC`
 	if f.Limit > 0 {
 		q += fmt.Sprintf(` LIMIT %d`, f.Limit)

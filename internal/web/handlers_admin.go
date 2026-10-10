@@ -28,6 +28,7 @@ type adminKidData struct {
 	JarFilter string
 	Login     service.LoginState
 	Overrides []store.LockOverride
+	Preview   *graphPreview
 }
 
 func (s *Server) loadKid(w http.ResponseWriter, r *http.Request) (service.KidView, bool) {
@@ -61,7 +62,7 @@ func (s *Server) adminKid(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		return
 	}
 	v := s.newView(w, r, kv.Kid.DisplayName, adminKidData{KidView: kv, Ledger: ledger, JarFilter: jarFilter,
-		Login: states[kv.Kid.ID], Overrides: s.lockActivity(r, kv.Kid.ID)})
+		Login: states[kv.Kid.ID], Overrides: s.lockActivity(r, kv.Kid.ID), Preview: s.previewChart(ctx, c, kv.Kid.ID, "/admin/kids/"+kv.Kid.ID+"/graph")})
 	v.Nav, v.Back = "kid:"+kv.Kid.ID, "/admin"
 	s.render(w, r, http.StatusOK, "admin_kid", v)
 }

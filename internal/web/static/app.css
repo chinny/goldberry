@@ -138,7 +138,7 @@ button.link { background: none; border: 0; padding: 0; font: inherit; color: var
 label, .label { font-size: 15px; line-height: 20px; font-weight: 700; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field .hint { font-size: 14px; line-height: 20px; color: var(--gb-ink-muted); font-weight: 400; }
-input[type="text"], input[type="password"], input[type="email"], input[type="number"], input:not([type]), select, textarea {
+input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], input:not([type]), select, textarea {
   min-height: 52px; width: 100%; border: 1px solid var(--gb-line); border-radius: var(--gb-r-sm); padding: 0 14px;
   font: inherit; color: var(--gb-ink); background: var(--gb-surface);
 }
@@ -382,3 +382,51 @@ ul.goals { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
 .credit-ink { color: var(--gb-river-strong); }
 .gauntlet-cost .goal-bar .fill-track { fill: #E9EEEC; }
 form .row label.small { white-space: nowrap; }
+
+/* --- balance graph ---------------------------------------------------------
+   Server-drawn SVG (chart.go). The plot stretches to its box, so strokes don't
+   scale and dots are zero-length round-capped paths. Jar lines keep the jar
+   hue and add a dash: slate and berry are too close under red-green colour
+   blindness for hue alone, and gold is light on white. */
+.graph-custom > summary { list-style: none; cursor: pointer; }
+.graph-custom > summary::-webkit-details-marker { display: none; }
+.graph-custom[open] { flex-basis: 100%; }
+.graph-dates { align-items: flex-end; margin-top: var(--gb-s3); }
+.chip .line-key { margin-right: 6px; }
+.graph-summary { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--gb-s3); }
+.graph-arrow { color: var(--gb-ink-muted); padding-bottom: 4px; }
+.graph-delta { margin-left: auto; font-weight: 700; padding-bottom: 4px; }
+.chart { margin: 0; }
+.chart-body { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 220px auto; column-gap: var(--gb-s2); }
+.chart-compact .chart-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: 72px; }
+.chart-y { display: flex; flex-direction: column; font-size: 13px; line-height: 16px; color: var(--gb-ink-muted); font-variant-numeric: tabular-nums; }
+.chart-y span { flex: 1; display: flex; align-items: center; justify-content: flex-end; }
+.chart-plot { grid-column: -2; display: block; width: 100%; height: 100%; overflow: visible; }
+.chart-x { grid-column: -2; display: flex; padding-top: 6px; font-size: 13px; line-height: 16px; color: var(--gb-ink-muted); }
+.chart-x span { flex: 1; text-align: center; white-space: nowrap; }
+.chart-plot path { vector-effect: non-scaling-stroke; }
+.chart-grid { fill: none; stroke: var(--gb-sunk); stroke-width: 1; }
+.chart-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-compact .chart-line { stroke-width: 2.5; }
+.line-total, .line-save { stroke: var(--gb-river); }
+.line-spend { stroke: var(--gb-gold); }
+.line-give { stroke: var(--gb-berry); stroke-dasharray: 1 5; }
+.line-custom { stroke: var(--gb-slate); stroke-dasharray: 8 5; }
+.line-save.chart-line { stroke-dasharray: 12 4; }
+.chart-area { stroke: none; fill-opacity: 0.12; }
+.area-total, .area-save { fill: var(--gb-river); }
+.area-spend { fill: var(--gb-gold); } .area-give { fill: var(--gb-berry); } .area-custom { fill: var(--gb-slate); }
+.chart-hit { stroke: transparent; stroke-width: 32; stroke-linecap: round; }
+.chart-ring { stroke: var(--gb-surface); stroke-width: 13; stroke-linecap: round; }
+.chart-dot { stroke-width: 9; stroke-linecap: round; stroke-dasharray: none; }
+.chart-pt:hover .chart-dot, .chart-pt:focus .chart-dot { stroke-width: 14; }
+.chart-pt:hover .chart-ring, .chart-pt:focus .chart-ring { stroke-width: 18; }
+.chart-pt:focus { outline: none; }
+.chart-pt:focus-visible .chart-ring { stroke: var(--gb-ink); }
+.line-key { width: 24px; height: 8px; flex: none; overflow: visible; }
+.line-key .chart-line { stroke-width: 3; }
+.chart-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--gb-s2) var(--gb-s5); }
+.chart-legend li { display: flex; align-items: center; gap: 6px; }
+.graph-preview .chart { pointer-events: none; }
+.list > li:target { background: var(--gb-gold-tint); margin: 0 calc(-1 * var(--gb-s4)); padding-left: var(--gb-s4); padding-right: var(--gb-s4); }
+.list > li { scroll-margin-top: var(--gb-s6); }

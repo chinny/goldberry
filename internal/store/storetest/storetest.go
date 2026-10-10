@@ -128,7 +128,7 @@ func Run(t *testing.T, open Opener) {
 		{"Timestamps", testTimestamps},
 		{"ExportImport", testExportImport},
 	}
-	for _, tc := range append(append(tests, jarTests...), goalTests...) {
+	for _, tc := range append(append(append(tests, jarTests...), goalTests...), historyTests...) {
 		t.Run(tc.name, func(t *testing.T) { tc.fn(t, open) })
 	}
 }

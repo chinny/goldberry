@@ -95,6 +95,9 @@ type Reader interface {
 	ListInterestRules(ctx context.Context, kidID string) ([]InterestRule, error)
 	// JarBalanceBefore is a jar's balance from entries effective before t.
 	JarBalanceBefore(ctx context.Context, jarID string, t time.Time) (int64, error)
+	// BalancesBefore is each of a kid's jars' balance (archived ones too)
+	// from entries effective before t, by jar ID. Jars with no entries are absent.
+	BalancesBefore(ctx context.Context, kidID string, t time.Time) (map[string]int64, error)
 	// JarEntriesBetween lists a jar's amounts effective in [from, to), oldest first.
 	JarEntriesBetween(ctx context.Context, jarID string, from, to time.Time) ([]DatedAmount, error)
 }

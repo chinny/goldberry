@@ -111,6 +111,19 @@ func (c Currency) Format(v int64) string {
 	return sign + c.Symbol + c.digits(v)
 }
 
+// Short is Format without the minor digits when they are zero ("$20" but
+// "$2.50"): for chart axes.
+func (c Currency) Short(v int64) string {
+	if c.Exponent == 0 || v%pow10(c.Exponent) != 0 {
+		return c.Format(v)
+	}
+	sign := ""
+	if v < 0 {
+		sign, v = Minus, -v
+	}
+	return sign + c.Symbol + group(v/pow10(c.Exponent))
+}
+
 // Signed renders a ledger amount with an explicit sign: "+$5.00" or "−$2.50".
 func (c Currency) Signed(v int64) string {
 	if v < 0 {
