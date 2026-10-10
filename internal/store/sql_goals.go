@@ -94,6 +94,25 @@ func (x queries) JarBalanceBefore(ctx context.Context, jarID string, t time.Time
 	return v, err
 }
 
+func (x queries) BalancesBefore(ctx context.Context, kidID string, t time.Time) (map[string]int64, error) {
+	rows, err := x.rows(ctx, `SELECT jar_id, CAST(SUM(amount) AS BIGINT) FROM ledger_entries
+		WHERE kid_id = ? AND effective_at < ? GROUP BY jar_id`, kidID, x.t(t))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]int64{}
+	for rows.Next() {
+		var jar string
+		var v int64
+		if err := rows.Scan(&jar, &v); err != nil {
+			return nil, err
+		}
+		out[jar] = v
+	}
+	return out, rows.Err()
+}
+
 func (x queries) JarEntriesBetween(ctx context.Context, jarID string, from, to time.Time) ([]DatedAmount, error) {
 	rows, err := x.rows(ctx, `SELECT amount, effective_at FROM ledger_entries
 		WHERE jar_id = ? AND effective_at >= ? AND effective_at < ? ORDER BY effective_at, id`, jarID, x.t(from), x.t(to))

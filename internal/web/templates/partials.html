@@ -80,7 +80,7 @@
 {{if .X}}
 <ul class="list">
   {{range rows .X}}
-  <li{{if .AllReversed}} class="struck"{{end}}>
+  <li id="e-{{.GroupKey}}"{{if .AllReversed}} class="struck"{{end}}>
     <div class="what">
       <strong>{{if .IsMove}}Moved {{.Jars}}{{else if .Comment}}{{.Comment}}{{else if eq .Kind "deposit"}}Money added{{else if eq .Kind "withdrawal"}}Money out{{else if eq .Kind "reversal"}}Undo{{else}}{{.Kind}}{{end}}</strong>
       <span class="meta">{{if eq .Kind "reversal"}}Undone by {{.ActorName}}{{else if .AllReversed}}Undone{{else if eq .Kind "allowance"}}Allowance{{else if .RequestID}}Approved by {{.ActorName}}{{else if .ActorName}}{{if $v.IsKid}}From {{end}}{{.ActorName}}{{else}}Automatic{{end}}{{if not .IsMove}} · {{.Jars}}{{end}} · {{$v.When .EffectiveAt}}</span>
@@ -131,4 +131,36 @@
   </li>
   {{end}}
 </ul>
+{{end}}
+
+{{/* A balance graph (see chart.go). Call with a chart. */}}
+{{define "chart"}}
+<figure class="chart{{if .Compact}} chart-compact{{end}}">
+  <div class="chart-body">
+    {{if not .Compact}}<div class="chart-y" aria-hidden="true">{{range .YTicks}}<span>{{.}}</span>{{end}}</div>{{end}}
+    <svg class="chart-plot" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-label="{{.Label}}">
+      {{if not .Compact}}{{range .Grid}}<path class="chart-grid" d="M0 {{.}}H1000"/>{{end}}{{end}}
+      {{range .Lines}}{{if .Area}}<path class="chart-area area-{{.Class}}" d="{{.Area}}"/>{{end}}{{end}}
+      {{range .Lines}}<path class="chart-line line-{{.Class}}" d="{{.Path}}"/>{{end}}
+      {{range .Lines}}{{$class := .Class}}{{range .Dots}}<a href="{{.Href}}" class="chart-pt"><title>{{.Title}}</title><path class="chart-hit" d="{{.D}}"/><path class="chart-ring" d="{{.D}}"/><path class="chart-dot line-{{$class}}" d="{{.D}}"/></a>{{end}}{{end}}
+    </svg>
+    {{if not .Compact}}<div class="chart-x" aria-hidden="true">{{range .XTicks}}<span>{{.}}</span>{{end}}</div>{{end}}
+  </div>
+</figure>
+{{end}}
+
+{{/* A short line in a jar's colour and dash, for legends. Call with a line class. */}}
+{{define "line-key"}}<svg class="line-key" viewBox="0 0 24 8" aria-hidden="true"><path class="chart-line line-{{.}}" d="M2 4H22"/></svg>{{end}}
+
+{{define "i-graph"}}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16"/><path d="M8 15l4-4 3 3 5-6"/></svg>{{end}}
+
+{{/* A month of the total as a small graph linking to the full one. Call with (pair $view (pair chart href)). */}}
+{{define "graph-preview"}}
+{{$v := .V}}{{$c := .X.Chart}}{{with index $c.Lines 0}}
+<a class="card card-link graph-preview stack-sm" href="{{$.X.Href}}">
+  <span class="spread"><strong>Last month</strong><span class="{{if gt .Delta 0}}amt-credit{{else if lt .Delta 0}}amt-debit{{else}}muted{{end}} small">{{if .Delta}}{{$v.Signed .Delta}}{{else}}No change{{end}}</span></span>
+  {{template "chart" $c}}
+  <span class="small">See the graph →</span>
+</a>
+{{end}}
 {{end}}

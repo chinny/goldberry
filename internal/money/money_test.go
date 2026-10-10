@@ -71,6 +71,11 @@ func TestFormat(t *testing.T) {
 		{jpy.Format(1500), "¥1,500"},
 		{jpy.Plain(1500), "1500"},
 		{kwd.Format(1234), "KWD 1.234"},
+		{usd.Short(2000), "$20"},
+		{usd.Short(250), "$2.50"},
+		{usd.Short(-100000), "−$1,000"},
+		{usd.Short(0), "$0"},
+		{jpy.Short(1500), "¥1,500"},
 	} {
 		if tc.got != tc.want {
 			t.Errorf("got %q, want %q", tc.got, tc.want)

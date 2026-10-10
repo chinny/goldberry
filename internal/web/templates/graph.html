@@ -1,0 +1,50 @@
+{{define "main"}}
+{{$v := .}}{{$d := .D}}
+<section class="stack graph-controls">
+  <nav class="row-wrap" aria-label="Time range">
+    {{range $d.Ranges}}<a class="chip{{if .On}} chip-on{{end}}" href="{{.Href}}"{{if .On}} aria-current="page"{{end}}>{{.Label}}</a>{{end}}
+    <details class="graph-custom"{{if or $d.Custom $v.Err}} open{{end}}>
+      <summary class="chip{{if $d.Custom}} chip-on{{end}}">Pick dates</summary>
+      <form method="get" class="row-wrap graph-dates">
+        <input type="hidden" name="range" value="custom">
+        <input type="hidden" name="show" value="{{$d.Show}}">
+        <div class="field"><label for="g-from">From</label><input id="g-from" name="from" type="date" value="{{$v.Val "from"}}" required></div>
+        <div class="field"><label for="g-to">To</label><input id="g-to" name="to" type="date" value="{{$v.Val "to"}}"></div>
+        <button class="btn btn-primary btn-sm" type="submit">Show</button>
+      </form>
+    </details>
+  </nav>
+  {{if gt (len $d.Shows) 1}}
+  <nav class="row-wrap" aria-label="Show">
+    {{range $d.Shows}}<a class="chip{{if .On}} chip-on{{end}}" href="{{.Href}}"{{if .On}} aria-current="page"{{end}}>{{if .Class}}{{template "line-key" .Class}}{{end}}{{.Label}}</a>{{end}}
+  </nav>
+  {{end}}
+</section>
+
+<section class="card stack">
+  {{with $d.Single}}
+  <div class="graph-summary">
+    <div><span class="caption">{{$d.FromLabel}}</span><div class="money-m">{{$v.Money .Start}}</div></div>
+    <span class="graph-arrow" aria-hidden="true">→</span>
+    <div><span class="caption">{{$d.ToLabel}}</span><div class="money-m">{{$v.Money .End}}</div></div>
+    <span class="graph-delta {{if gt .Change 0}}amt-credit{{else if lt .Change 0}}amt-debit{{else}}muted{{end}}">{{if .Change}}{{$v.Signed .Change}}{{else}}No change{{end}}</span>
+  </div>
+  {{end}}
+  {{template "chart" $d.Chart}}
+  {{if $d.Chart.Legend}}
+  <ul class="chart-legend" aria-label="Lines">
+    {{range $d.Chart.Lines}}<li>{{template "line-key" .Class}}<span>{{.Name}}</span> <strong class="num">{{$v.Money .End}}</strong> <span class="caption">({{$v.Signed .Delta}})</span></li>{{end}}
+  </ul>
+  {{end}}
+  <p class="caption">{{if $v.IsKid}}Each dot is a time your money changed. Tap one to see what happened.{{else}}Each dot is a change; tap one to find it in the list.{{end}}</p>
+</section>
+
+<section class="stack">
+  <h2>What changed</h2>
+  {{if $d.History.Entries}}
+  {{template "ledger-rows" (pair $v $d.History.Entries)}}
+  {{else}}
+  <p class="card empty-state">{{if $v.IsKid}}No money came in or went out in these dates.{{else}}No changes in this range.{{end}}</p>
+  {{end}}
+</section>
+{{end}}

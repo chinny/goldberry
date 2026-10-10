@@ -240,6 +240,15 @@ A request reserves the money as soon as it's made. Only approval moves it, and e
 - Optional monthly cap (e.g. at most $5) so a generous rate on a big birthday haul stays affordable.
 - The kid's Save jar shows a **"leave it and in 12 months you'll have …" projection**. That number is the lesson.
 
+### 7.5 Balance graph
+
+- A kid sees their own balance over time at `/graph`; a parent sees any kid's at `/admin/kids/:id/graph`. Both home pages carry a small "Last month" graph that links there.
+- **Ranges:** presets for the last week (1W), month (1M) and three months (3M), or a custom pair of dates. Dates are household calendar days; a range never runs past now.
+- **Lines:** the total (default), every jar as its own line, or one jar. Moves between jars don't change the total, so they add no point to it and are left out of its list.
+- **Changes:** the line steps at each change, with a dot per ledger row (a split deposit is one dot). Hovering a dot names the date, amount, comment and new balance; tapping it jumps to that row in the list of changes under the graph, which is also the graph's table view. Private notes stay admin-only.
+- **Drawing:** SVG built on the server (ADR 0013), so it works without JavaScript and under the CSP. Jar lines keep the jar hue and add a dash pattern, with a legend, because hue alone isn't enough for colour-blind readers.
+- The balance at the range start comes from one `SUM … GROUP BY jar_id` before it, and the changes from `ListLedger` with a date window. Nothing is cached.
+
 ## 8. Notifications
 
 Every notification is first a **row in `notifications`**, one per recipient. Email is an optional second channel that delivers a copy. If SMTP is down or never configured, nothing is lost.
@@ -417,12 +426,14 @@ The app is server-rendered with Go `html/template`, and HTMX swaps fragments. HT
 | `POST /logout` | Signed in | Revoke the session |
 | `GET /` | Kid | Home: jars, available vs pending, goals, recent activity |
 | `GET /ledger` | Kid | Own history, filter by jar |
+| `GET /graph` | Kid | Own balance graph: `?range=1w\|1m\|3m` or `?from=&to=`, `&show=total\|jars\|<jar id>` (§7.5) |
 | `POST /requests`, `POST /requests/:id/cancel` | Kid | Create or cancel a withdrawal request |
 | `POST /goals`, `POST /goals/:id` | Kid | Create or edit own goals |
 | `POST /transfers` | Kid | Move between own jars, subject to jar locks (§5.4) |
 | `POST /jars/:id/locks`, `POST /locks/:id/{override,remove}` | Kid | Set a self-lock; override or remove one after the gauntlet (§5.4) |
 | `GET /admin` | Admin | Dashboard: a card per kid plus the pending-requests queue |
 | `GET /admin/kids/:id` | Admin | One kid: jars, locks, ledger, schedules, interest, goals |
+| `GET /admin/kids/:id/graph` | Admin | One kid's balance graph (§7.5) |
 | `POST /admin/kids/:id/entries` | Admin | Add or remove funds |
 | `POST /admin/entries/:id/reverse` | Admin | Reverse a ledger entry |
 | `POST /admin/requests/:id/{approve,deny}` | Admin | Decide a request, with an optional note |
@@ -569,6 +580,7 @@ As in Copperkeep, use `docs/adr/`. Seed it with these:
 | 0008 | Per-account throttling; kids hard-lock, admins never do |
 | 0009 | Jar locks: admin locks are hard, kid self-locks are soft with an override gauntlet |
 | 0010 | AGPL-3.0 licence, matching Copperkeep |
+| 0013 | Charts are SVG drawn on the server |
 
 ## 14. Phasing
 

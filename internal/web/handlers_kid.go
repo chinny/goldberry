@@ -15,9 +15,14 @@ func (s *Server) kidHome(w http.ResponseWriter, r *http.Request, c *reqCtx) {
 		s.serverError(w, r, err)
 		return
 	}
-	v := s.newView(w, r, c.User.DisplayName, kv)
+	v := s.newView(w, r, c.User.DisplayName, kidHomeData{KidView: kv, Preview: s.previewChart(r.Context(), c, c.User.ID, "/graph")})
 	v.Eyebrow, v.Nav = "Hi,", "home"
 	s.render(w, r, http.StatusOK, "kid_home", v)
+}
+
+type kidHomeData struct {
+	service.KidView
+	Preview *graphPreview
 }
 
 type kidLedgerData struct {

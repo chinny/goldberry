@@ -154,6 +154,18 @@ type LedgerEntry struct {
 
 func (e LedgerEntry) Reversed() bool { return e.ReversedByID != "" }
 
+// GroupKey names the ledger row an entry shows in: the legs of a move share
+// their transfer_id, the parts of a split deposit their batch_id.
+func (e LedgerEntry) GroupKey() string {
+	switch {
+	case e.TransferID != "":
+		return e.TransferID
+	case e.BatchID != "":
+		return e.BatchID
+	}
+	return e.ID
+}
+
 type RequestStatus string
 
 const (
@@ -205,10 +217,13 @@ type AuditEntry struct {
 	CreatedAt time.Time
 }
 
-// LedgerFilter narrows ListLedger. KidID is required.
+// LedgerFilter narrows ListLedger. KidID is required. From and To bound
+// effective_at to [From, To); a zero time leaves that side open.
 type LedgerFilter struct {
 	KidID string
 	JarID string
+	From  time.Time
+	To    time.Time
 	Limit int
 }
 
